@@ -63,8 +63,27 @@ a{color:inherit}
 .actions a:hover{text-decoration:underline}
 
 /* featured rows */
-.rows{display:flex;flex-direction:column;gap:14px;margin-bottom:14px}
-.row{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;padding:18px}
+.rows{display:flex;flex-direction:column;gap:64px;margin-bottom:64px;padding-top:34px}
+.row{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;padding:18px;
+  --from:polygon(0 0,0 0,0 100%,0 100%);--to:polygon(0 0,100% 0,100% 100%,0 100%)}
+
+/* slash cuts: a themed divider above each featured row, swept in once like a tracer */
+.row::before,.row::after{content:"";position:absolute;left:-1.5%;right:-1.5%;top:calc(-32px - var(--h)/2);height:var(--h);transform:rotate(var(--tilt));pointer-events:none}
+.row::before{background:var(--cut);clip-path:var(--to);transition:clip-path .55s cubic-bezier(.7,0,.2,1)}
+.row::after{background:linear-gradient(90deg,transparent,var(--glow),transparent) -30% 0/18% 100% no-repeat;filter:blur(1px);opacity:0}
+.cuts .row:not(.cut-in)::before{clip-path:var(--from)}
+.cuts .row.cut-in::after{animation:tracer .55s cubic-bezier(.7,0,.2,1)}
+@keyframes tracer{0%,85%{opacity:1}0%{background-position:-30% 0}100%{opacity:0;background-position:130% 0}}
+/* PassportSOL: perforated stamp edge in Solana colours */
+.row[data-cut=sol]{--h:4px;--tilt:-1.6deg;--glow:#fff;--cut:linear-gradient(90deg,#9945ff,#14f195)}
+.row[data-cut=sol]::before{mask:repeating-linear-gradient(90deg,#000 0 14px,transparent 14px 20px)}
+/* Pixel Arsenal: hazard tape */
+.row[data-cut=hazard]{--h:10px;--tilt:2deg;--glow:#ffe14a;--cut:repeating-linear-gradient(-45deg,#ff1744 0 7px,#16161a 7px 14px)}
+/* Monadrift: checkered finish line */
+.row[data-cut=checker]{--h:12px;--tilt:-2.4deg;--glow:#b4ff5a;--cut:conic-gradient(var(--fg) 25%,transparent 0 50%,var(--fg) 0 75%,transparent 0) 0 0/12px 12px}
+/* SS3-Rust: tapered sword slash in rust */
+.row[data-cut=blade]{--h:7px;--tilt:1.4deg;--glow:#fff3e0;--cut:linear-gradient(90deg,#7a2512,#ce422b 40%,#ffb08a 55%,#ce422b 70%,#7a2512);
+  --from:polygon(0 50%,0 50%,0 50%,0 50%);--to:polygon(0 50%,62% 0,100% 50%,62% 100%)}
 .row:hover{transform:none}
 .row>*{min-width:0}
 .row-text{display:flex;flex-direction:column;gap:10px}
@@ -103,6 +122,10 @@ a{color:inherit}
 .dm-slot{min-width:0;padding:5px;background:#15171b;border:2px solid #333;border-radius:8px;cursor:pointer}
 .dm-slot canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .dm-label{flex:1;font-size:12.5px;min-height:1.3em}
+.dm-stage.ranged{padding:0}
+.ranged .dm-hero,.ranged .dm-flash{display:none}
+.dm-range{display:block;width:100%;height:220px;border-radius:8px;cursor:crosshair;touch-action:none}
+.dm-range:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
 
 /* 03 monadrift */
 #demo-monad{min-height:340px}
@@ -203,7 +226,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
 </div>
 
 <div class="rows">
-  <article class="card row" data-c="web3">
+  <article class="card row" data-c="web3" data-cut="sol">
     <div class="row-text">
       <div class="meta mono"><span class="idx">01</span><span class="event">Solana</span></div>
       <h3>PassportSOL</h3>
@@ -219,7 +242,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
     <div class="demo" id="demo-passport" role="group" aria-label="Passport demo: toggle identity stamps to raise the Gitcoin score, check the human threshold of 30, and mint a memo transaction."></div>
   </article>
 
-  <article class="card row" data-c="games">
+  <article class="card row" data-c="games" data-cut="hazard">
     <div class="row-text">
       <div class="meta mono"><span class="idx">02</span><span class="event">Mod · Melty</span></div>
       <h3>ULTRAKILL: Pixel Arsenal</h3>
@@ -235,7 +258,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
     <div class="demo" id="demo-arsenal" role="group" aria-label="Armory demo: a grid of procedurally generated pixel guns with rarity borders. Hover or focus shows a name, click shows a gun big with a muzzle flash, Shuffle makes a new grid."></div>
   </article>
 
-  <article class="card row" data-c="web3 games">
+  <article class="card row" data-c="web3 games" data-cut="checker">
     <div class="row-text">
       <div class="meta mono"><span class="idx">03</span><span class="event">Monad Blitz · 2026</span></div>
       <h3>Monadrift</h3>
@@ -251,7 +274,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
     <div class="demo" id="demo-monad" tabindex="0" role="group" aria-label="Race demo: pick a lane before each checkpoint with the buttons or arrow keys. Only the next segment is visible, and the AI racer picks the best lane."></div>
   </article>
 
-  <article class="card row" data-c="games tools">
+  <article class="card row" data-c="games tools" data-cut="blade">
     <div class="row-text">
       <div class="meta mono"><span class="idx">04</span><span class="event">Rust port</span></div>
       <h3>SS3-Rust</h3>
@@ -429,6 +452,16 @@ btns.forEach(b=>b.onclick=()=>{
 <script>
 /* featured row demos: one IIFE each */
 
+/* slash cuts: sweep each divider in once when its row scrolls into view */
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const rows = document.querySelector('.rows');
+  rows.classList.add('cuts');
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('cut-in'); io.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -12% 0px' });
+  rows.querySelectorAll('.row').forEach(r => io.observe(r));
+}
+
 /* 01 PassportSOL: stamps -> Gitcoin score -> human threshold -> memo tx */
 (() => {
   const root = document.getElementById('demo-passport');
@@ -513,7 +546,7 @@ btns.forEach(b=>b.onclick=()=>{
     if (int(2)) box(2, 2, 3, 4, 3);
     const x = r(), tier = x < .45 ? 'Common' : x < .7 ? 'Uncommon' : x < .85 ? 'Rare' : x < .95 ? 'Epic' : x < .99 ? 'Legendary' : 'Mythical';
     const name = `${PRE[int(PRE.length)]} ${KIND[int(KIND.length)]} Mk ${1 + int(4)} · ${tier}`;
-    const pal = [null, `hsl(${hue} 45% 55%)`, `hsl(${(hue + 40) % 360} 10% 82%)`, `hsl(${(hue + 180) % 360} 75% 55%)`];
+    const pal = [null, `hsl(${hue},45%,55%)`, `hsl(${(hue + 40) % 360},10%,82%)`, `hsl(${(hue + 180) % 360},75%,55%)`];
     return { g, pal, name, color: RC[tier] };
   };
   const paint = (cv, it) => {
@@ -523,18 +556,161 @@ btns.forEach(b=>b.onclick=()=>{
   };
   root.innerHTML = `
     <div class="dm-ark">
-      <div class="dm-top mono"><span>armory</span><span>1100+ weapons</span></div>
+      <div class="dm-top mono"><span>armory</span><span class="dm-hits" aria-live="polite">1100+ weapons</span></div>
       <div class="dm-stage"><canvas class="dm-hero" width="16" height="8" aria-hidden="true"></canvas><span class="dm-flash" aria-hidden="true"></span></div>
       <div class="dm-armory"></div>
-      <div class="dm-foot"><span class="dm-label mono" aria-live="polite"></span><button type="button" class="dm-btn dm-shuffle">Shuffle</button></div>
+      <div class="dm-foot"><span class="dm-label mono" aria-live="polite"></span><button type="button" class="dm-btn dm-range-btn" aria-pressed="false">Firing range</button><button type="button" class="dm-btn dm-shuffle">Shuffle</button></div>
     </div>`;
   const $ = s => root.querySelector(s);
   const hero = $('.dm-hero'), flash = $('.dm-flash'), label = $('.dm-label'), armory = $('.dm-armory');
-  let seed = 1;
+  const stage = $('.dm-stage'), rangeBtn = $('.dm-range-btn'), hits = $('.dm-hits');
+  let seed = 1, cur = null, range = null;
+
+  /* 3D firing range: the selected pixel gun extruded to voxels, three.js loaded on first open */
+  const makeRange = T => {
+    const H = 220;
+    const renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    const cv = renderer.domElement;
+    cv.className = 'dm-range'; cv.tabIndex = 0;
+    cv.setAttribute('aria-label', 'Firing range: click, or press Space, to shoot the target robots with the selected gun');
+    stage.classList.add('ranged'); stage.append(cv);
+
+    const scene = new T.Scene();
+    scene.background = new T.Color('#0b0b0f');
+    scene.fog = new T.Fog('#0b0b0f', 8, 22);
+    const cam = new T.PerspectiveCamera(55, 1, .05, 50);
+    cam.position.set(0, 1.4, 0); cam.rotation.x = -.08;
+    const sun = new T.DirectionalLight('#ffffff', 1.6); sun.position.set(3, 6, 2);
+    scene.add(cam, sun, new T.HemisphereLight('#cfd8ff', '#20161a', 1.2), new T.GridHelper(60, 60, '#3a3d46', '#1b1e24'));
+    const box = new T.BoxGeometry(1, 1, 1);
+    const mats = new Map();
+    const mat = c => mats.get(c) || mats.set(c, new T.MeshLambertMaterial({ color: c })).get(c);
+
+    // target robots: boxy dummies with a lime visor, swaying on the range
+    const dummies = [-2.4, 0, 2.4].map((x, i) => {
+      const d = new T.Group();
+      const part = (w, h, dp, px, py, pz, c, e = 0) => {
+        const m = new T.Mesh(box, new T.MeshLambertMaterial({ color: c, emissive: e }));
+        m.scale.set(w, h, dp); m.position.set(px, py, pz); d.add(m);
+      };
+      part(.18, .4, .2, -.14, .2, 0, '#3a3e47'); part(.18, .4, .2, .14, .2, 0, '#3a3e47');
+      part(.6, .7, .35, 0, .75, 0, '#4a4f5a');
+      part(.42, .36, .36, 0, 1.3, 0, '#5d6370');
+      part(.32, .08, .02, 0, 1.33, .19, '#b4ff5a', '#4c7a10');
+      d.position.set(x, 0, -5.5 - (i % 2) * 2); d.scale.setScalar(1.25);
+      d.userData = { x, phase: i * 2, down: 0 };
+      scene.add(d);
+      return d;
+    });
+
+    const gunG = new T.Group(); cam.add(gunG);
+    const REST = new T.Vector3(.32, -.26, -.6), muzzle = new T.Vector3();
+    const flashL = new T.PointLight('#ffcf6b', 0, 4);
+    const lineMat = new T.LineBasicMaterial({ color: '#fff' });
+    let tracer = null, kick = 0, flashT = -1e9, score = 0, visible = true;
+    const S = .028;
+    const setGun = it => {
+      gunG.clear(); gunG.add(flashL);
+      let tip = 8;
+      // grid x runs down the barrel (-z), grid y is height; the body is thicker than barrel/parts
+      it.g.forEach((row, y) => row.forEach((v, x) => {
+        if (!v) return;
+        const m = new T.Mesh(box, mat(it.pal[v]));
+        m.scale.set(S * (v === 1 ? 3 : 2), S, S);
+        m.position.set(0, (4 - y) * S, -(x - 8) * S);
+        gunG.add(m);
+        if (y === 3) tip = Math.max(tip, x);
+      }));
+      muzzle.set(0, S, -(tip - 7.5) * S);
+      flashL.position.copy(muzzle);
+      lineMat.color.set(it.color);
+    };
+
+    const ray = new T.Raycaster(), aim = new T.Vector2();
+    const fire = () => {
+      ray.setFromCamera(aim, cam);
+      const hit = ray.intersectObjects(dummies.filter(d => !d.userData.down), true)[0];
+      const from = gunG.localToWorld(muzzle.clone());
+      const to = hit ? hit.point : ray.ray.at(30, new T.Vector3());
+      if (tracer) { scene.remove(tracer); tracer.geometry.dispose(); }
+      tracer = new T.Line(new T.BufferGeometry().setFromPoints([from, to]), lineMat);
+      scene.add(tracer);
+      flashT = performance.now(); kick = 1;
+      if (hit) {
+        let d = hit.object;
+        while (!dummies.includes(d)) d = d.parent;
+        d.userData.down = flashT;
+        hits.textContent = `hits ${++score}`;
+      }
+    };
+    const toAim = e => {
+      const r = cv.getBoundingClientRect();
+      aim.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    };
+    cv.addEventListener('pointermove', toAim);
+    cv.addEventListener('pointerdown', e => { toAim(e); fire(); });
+    cv.addEventListener('keydown', e => {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); aim.set(0, 0); fire(); }
+    });
+
+    const size = () => {
+      const w = stage.clientWidth;
+      renderer.setSize(w, H, false); cam.aspect = w / H; cam.updateProjectionMatrix();
+    };
+    const ro = new ResizeObserver(size); ro.observe(stage);
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }); io.observe(cv);
+
+    renderer.setAnimationLoop(now => {
+      if (!visible) return;
+      dummies.forEach(d => {
+        const u = d.userData;
+        if (!reduced) d.position.x = u.x + Math.sin(now / 1600 + u.phase) * .6;
+        d.rotation.x = u.down ? -1.4 * Math.min(1, (now - u.down) / 150) : 0;
+        if (u.down && now - u.down > 1200) u.down = 0;
+      });
+      kick = reduced ? 0 : kick * .82;
+      gunG.position.set(REST.x, REST.y, REST.z + kick * .06);
+      gunG.rotation.set(aim.y * .2 + kick * .12, .06 - aim.x * .25, 0);
+      const f = Math.max(0, 1 - (now - flashT) / 120);
+      flashL.intensity = f * 4;
+      if (tracer) tracer.visible = f > 0;
+      renderer.render(scene, cam);
+    });
+
+    return {
+      setGun,
+      close() {
+        renderer.setAnimationLoop(null); ro.disconnect(); io.disconnect();
+        scene.traverse(o => { o.material?.dispose(); });
+        tracer?.geometry.dispose(); box.dispose(); renderer.dispose(); cv.remove();
+        stage.classList.remove('ranged');
+      }
+    };
+  };
+
+  let T3 = null;
+  rangeBtn.onclick = async () => {
+    if (range) {
+      range.close(); range = null;
+      rangeBtn.setAttribute('aria-pressed', 'false'); hits.textContent = '1100+ weapons';
+      return;
+    }
+    rangeBtn.disabled = true;
+    try {
+      T3 ||= await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+      range = makeRange(T3); range.setGun(cur);
+      rangeBtn.setAttribute('aria-pressed', 'true'); hits.textContent = 'hits 0';
+      label.textContent = 'click to fire · pick a gun'; label.style.color = '';
+    } catch { label.textContent = 'range needs WebGL'; }
+    rangeBtn.disabled = false;
+  };
+
   const show = (it, fire) => {
+    cur = it; range?.setGun(it);
     paint(hero, it);
     label.textContent = it.name; label.style.color = it.color;
-    if (fire) {
+    if (fire && !range) {
       if (!reduced) hero.animate([{ transform: 'translateX(-10px)' }, { transform: 'translateX(0)' }], { duration: 140 });
       flash.classList.add('on');
       setTimeout(() => flash.classList.remove('on'), 120);

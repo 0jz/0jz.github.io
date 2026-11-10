@@ -51,6 +51,10 @@ a{color:inherit}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,transform .15s}
 .card:hover{border-color:var(--acc);transform:translateY(-2px)}
 .card[hidden]{display:none}
+.feat{grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));margin-bottom:14px}
+.feat .card{padding:26px}
+.feat .card h3{font-size:26px;letter-spacing:-.02em}
+.feat .card p{font-size:15.5px}
 .card h3{margin:0;font-size:18px}
 .card p{margin:0;color:var(--mut);font-size:14.5px;flex:1}
 .meta{display:flex;justify-content:space-between;gap:10px;font-size:12px}
@@ -123,7 +127,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   <button aria-pressed="false" data-f="tools">tools</button>
 </div>
 
-<div class="grid">
+<div class="grid feat">
   <article class="card" data-c="web3 games">
     <div class="meta mono"><span class="idx">01</span><span class="event">Monad Blitz · 2026</span></div>
     <h3>Monadrift</h3>
@@ -148,8 +152,18 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
     <div class="actions"><a href="https://github.com/0jz/Skadi">Code</a></div>
   </article>
 
+  <article class="card" data-c="ai web3">
+    <div class="meta mono"><span class="idx">04</span><span class="event">Startit Money Agent Hackathon</span></div>
+    <h3>PayrollBot</h3>
+    <p>Autonomous payroll agent: reads freelancer timesheet emails, checks them with Claude, and pays out in SOL — with a human approval step.</p>
+    <div class="tags"><span>JavaScript</span><span>Claude</span><span>Solana</span></div>
+    <div class="actions"><a href="https://github.com/0jz/payrollbot">Code</a></div>
+  </article>
+</div>
+
+<div class="grid">
   <article class="card" data-c="web3">
-    <div class="meta mono"><span class="idx">04</span><span class="event">Solana</span></div>
+    <div class="meta mono"><span class="idx">05</span><span class="event">Solana</span></div>
     <h3>PassportSOL</h3>
     <p>Reputation passport for Solana wallets: collect identity stamps, mint a compact on-chain passport, and gate airdrops against bots.</p>
     <div class="tags"><span>TypeScript</span><span>Solana</span><span>Wallet Adapter</span></div>
@@ -157,19 +171,11 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="web3 tools">
-    <div class="meta mono"><span class="idx">05</span><span class="event">Colosseum Hackathon</span></div>
+    <div class="meta mono"><span class="idx">06</span><span class="event">Colosseum Hackathon</span></div>
     <h3>Dibs</h3>
     <p>Used PC parts marketplace you can trust: shop-tested hardware, Solana escrow, and payment released only after verification on the buyer's PC.</p>
     <div class="tags"><span>TypeScript</span><span>Solana</span></div>
     <div class="actions"><a href="https://github.com/0jz/Dibs">Code</a></div>
-  </article>
-
-  <article class="card" data-c="ai web3">
-    <div class="meta mono"><span class="idx">06</span><span class="event">Startit Money Agent Hackathon</span></div>
-    <h3>PayrollBot</h3>
-    <p>Autonomous payroll agent: reads freelancer timesheet emails, checks them with Claude, and pays out in SOL — with a human approval step.</p>
-    <div class="tags"><span>JavaScript</span><span>Claude</span><span>Solana</span></div>
-    <div class="actions"><a href="https://github.com/0jz/payrollbot">Code</a></div>
   </article>
 
   <article class="card" data-c="ai web3">

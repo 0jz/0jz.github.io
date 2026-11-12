@@ -127,16 +127,9 @@ a{color:inherit}
 .dm-range{display:block;width:100%;height:220px;border-radius:8px;cursor:crosshair;touch-action:none}
 .dm-range:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
 
-/* 03 monadrift */
-#demo-monad{min-height:340px}
-.dm-cv{position:absolute;inset:0;width:100%;height:100%;display:block}
-.dm-mo-top{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:#9a9aa6}
-.dm-mo-top b{color:#f4f2ee;font-weight:700}
-.dm-msg{flex:1;min-width:0;text-align:center;font-size:11px;color:#b4ff5a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dm-mo-log{position:absolute;left:12px;right:12px;bottom:56px;font-size:11px;color:#9a9aa6;pointer-events:none;background:rgba(11,11,15,.7);border-radius:6px}
-.dm-mo-log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
-.dm-mo-ctl{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:8px}
-.dm-lane{min-width:52px}
+/* 03 monadrift: time-trial sim, embedded from the Monadrift repo's sim/ (copy of 33dba3c) */
+#demo-monad{min-height:520px}
+#demo-monad iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 
 /* 04 ss3 oracle */
 .dm-ss{padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -271,7 +264,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
       <div class="tags"><span>Solidity</span><span>Foundry</span><span>Node</span><span>ethers</span></div>
       <div class="actions"><a href="https://monadrift.vercel.app">Play live ↗</a><a href="https://github.com/0jz/Monadrift">Code</a></div>
     </div>
-    <div class="demo" id="demo-monad" tabindex="0" role="group" aria-label="Race demo: pick a lane before each checkpoint with the buttons or arrow keys. Only the next segment is visible, and the AI racer picks the best lane."></div>
+    <div class="demo" id="demo-monad"><iframe src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible." loading="lazy"></iframe></div>
   </article>
 
   <article class="card row" data-c="games tools" data-cut="blade">
@@ -732,137 +725,6 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
   };
   $('.dm-shuffle').onclick = () => { seed = Math.random() * 1e6 | 0; build(); };
   build();
-})();
-
-/* 03 Monadrift: fog-of-war lane racer, one checkpoint per tx */
-(() => {
-  const root = document.getElementById('demo-monad');
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const SEGT = 2.2, LEN = 12;                       // seconds per segment, checkpoints per race
-  const COL = ['rgba(255,255,255,.05)', 'rgba(180,255,90,.35)', 'rgba(255,138,31,.35)']; // clear, boost, slow
-  const W_AI = [2, 3, 0];                           // AI preference by pattern value
-  const hex = n => Array.from({ length: n }, () => '0123456789abcdef'[Math.random() * 16 | 0]).join('');
-  root.innerHTML = `
-    <canvas class="dm-cv" aria-hidden="true"></canvas>
-    <div class="dm-mo-top mono">
-      <span>you <b class="sp">1.00</b> MON</span>
-      <span class="dm-msg"></span>
-      <span>AI <b class="sa">1.00</b> MON</span>
-    </div>
-    <div class="dm-mo-log mono"></div>
-    <div class="dm-mo-ctl">
-      <button type="button" class="dm-btn dm-lane" aria-label="Pick left lane">◀</button>
-      <button type="button" class="dm-btn dm-lane" aria-label="Pick middle lane">▲</button>
-      <button type="button" class="dm-btn dm-lane" aria-label="Pick right lane">▶</button>
-    </div>`;
-  const $ = s => root.querySelector(s);
-  const cv = $('.dm-cv'), ctx = cv.getContext('2d'), logEl = $('.dm-mo-log'), msg = $('.dm-msg');
-  const sp = $('.sp'), sa = $('.sa'), lanes = [...root.querySelectorAll('.dm-lane')];
-  let S = 0, prog = 0, aiSet = false, stakeP = 1, stakeA = 1, floats = [], msgTimer = 0;
-  let lane = { p: 1, a: 1 }, pick = { p: 1, a: 1 }, drawX = { p: null, a: null };
-  let pats = {};
-  let raf = 0, last = 0, running = false;
-  // segment hazards: 0 clear, 1 boost, 2 slow (generated lazily, hidden until revealed)
-  const pat = i => pats[i] || (pats[i] = [0, 1, 2].map(() => { const r = Math.random(); return r < .3 ? 1 : r < .6 ? 2 : 0; }));
-  const money = () => { sp.textContent = stakeP.toFixed(2); sa.textContent = stakeA.toFixed(2); };
-  const addLog = t => {
-    const d = document.createElement('div'); d.textContent = t; logEl.append(d);
-    while (logEl.children.length > 3) logEl.firstChild.remove();
-  };
-  const aiChoose = p => {
-    let best = 0, bs = -1;
-    p.forEach((v, l) => { const sc = W_AI[v] + Math.random() * .5; if (sc > bs) { bs = sc; best = l; } });
-    return best;
-  };
-  const paintLanes = () => lanes.forEach((b, i) => b.setAttribute('aria-pressed', String(i === pick.p)));
-  const decideAI = () => { if (!aiSet) { aiSet = true; pick.a = aiChoose(pat(S + 1)); } };
-  // checkpoint: both choices confirm, faster same-lane tx steals 0.01 MON, hazards apply
-  const cross = () => {
-    const lp = .2 + Math.random() * .2, la = .2 + Math.random() * .2;
-    if (pick.p === pick.a) {
-      if (lp < la) { stakeP += .01; stakeA -= .01; } else { stakeA += .01; stakeP -= .01; }
-      floats.push({ lane: pick.p, text: '-0.01 MON', t: performance.now() });
-    }
-    const v = pat(S + 1), eff = x => x === 1 ? .01 : x === 2 ? -.01 : 0;
-    stakeP += eff(v[pick.p]); stakeA += eff(v[pick.a]);
-    addLog(`chooseLane(${pick.p}) · 0x${hex(4)}…${hex(3)} · ${lp.toFixed(2)}s ✓`);
-    addLog(`ai chooseLane(${pick.a}) · 0x${hex(4)}…${hex(3)} · ${la.toFixed(2)}s ✓`);
-    money();
-    lane = { ...pick }; S++; prog = 0; aiSet = false; pick = { ...lane };
-    if (S >= LEN) {
-      S = 0; pats = {}; stakeP = stakeA = 1; money();
-      msg.textContent = 'new seed revealed · 0x' + hex(6);
-      clearTimeout(msgTimer); msgTimer = setTimeout(() => { msg.textContent = ''; }, 2400);
-    }
-    paintLanes();
-  };
-  const advance = () => { decideAI(); prog = 0; cross(); };
-  const frame = now => {
-    const dt = Math.min(.05, (now - last) / 1000); last = now;
-    prog += dt / SEGT;
-    if (prog >= .4) decideAI();
-    if (prog >= 1) { prog = 0; cross(); }
-    draw();
-    raf = requestAnimationFrame(frame);
-  };
-  const start = () => { if (running || reduced) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); };
-  const stop = () => { running = false; cancelAnimationFrame(raf); };
-  const draw = () => {
-    const w = cv.clientWidth, h = cv.clientHeight, sh = h * .2, cy = h * .66;
-    const x0 = w * .25, lw = w * .5 / 3, tx = l => x0 + (l + .5) * lw;
-    ctx.fillStyle = '#0b0b0f'; ctx.fillRect(0, 0, w, h);
-    const yA = cy - (1 - prog) * sh;                       // checkpoint ahead of the car
-    const band = (top, bot, p) => {
-      for (let l = 0; l < 3; l++) { ctx.fillStyle = p ? COL[p[l]] : '#050507'; ctx.fillRect(x0 + l * lw, top, lw, bot - top); }
-    };
-    band(0, yA - sh, null);                                 // fog: beyond the next segment
-    band(yA - sh, yA, pat(S + 1));                          // next segment: revealed
-    band(yA, yA + sh, pat(S));                              // segment under the cars
-    ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = 1.5;
-    for (let k = -1; k <= 3; k++) { const y = yA - k * sh; ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + lw * 3, y); ctx.stroke(); }
-    ctx.setLineDash([]);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;           // outline of the lane picked for the next segment
-    ctx.strokeRect(x0 + pick.p * lw + 3, yA - sh + 3, lw - 6, sh - 6);
-    for (const k of ['p', 'a']) {
-      if (drawX[k] == null) drawX[k] = tx(lane[k]);
-      drawX[k] += (tx(lane[k]) - drawX[k]) * (reduced ? 1 : .25);
-    }
-    const car = (x, col, label) => {
-      ctx.fillStyle = col; ctx.fillRect(x - 9, cy - 14, 18, 26);
-      ctx.fillStyle = '#f4f2ee'; ctx.font = '600 10px ui-monospace, Consolas, monospace'; ctx.textAlign = 'center';
-      ctx.fillText(label, x, cy + 26);
-    };
-    car(drawX.a, '#a855f7', 'AI');
-    car(drawX.p, '#b4ff5a', 'you');
-    const now = performance.now();
-    floats = floats.filter(f => now - f.t < 1200);
-    ctx.textAlign = 'center'; ctx.font = '600 12px ui-monospace, Consolas, monospace';
-    for (const f of floats) {
-      const age = (now - f.t) / 1200;
-      ctx.globalAlpha = 1 - age; ctx.fillStyle = '#ff8a8a';
-      ctx.fillText(f.text, tx(f.lane), cy - 30 - age * 30);
-    }
-    ctx.globalAlpha = 1;
-  };
-  const fit = () => {
-    const d = devicePixelRatio || 1;
-    cv.width = cv.clientWidth * d; cv.height = cv.clientHeight * d;
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-    draw();
-  };
-  const choose = i => {
-    pick.p = i; paintLanes();
-    if (reduced) advance();                                 // reduced motion: one checkpoint per press
-    draw();
-  };
-  lanes.forEach((b, i) => { b.onclick = () => choose(i); });
-  root.addEventListener('keydown', e => {
-    const i = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2 }[e.key];
-    if (i !== undefined) { e.preventDefault(); choose(i); }
-  });
-  money(); paintLanes();
-  new ResizeObserver(fit).observe(cv);
-  new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop())).observe(root);
 })();
 
 /* 04 SS3-Rust: oracle check, simulated output */

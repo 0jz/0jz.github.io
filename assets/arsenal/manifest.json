@@ -1,0 +1,13 @@
+{
+  "v2": "v2/v2.json",
+  "guns": [
+    { "id": 286, "name": "Alien Cannon", "rarity": 2, "clip": 12, "category": 6, "file": "guns/g286.json", "grenade": true },
+    { "id": 142, "name": "Hellraiser", "rarity": 3, "clip": 35, "category": 1, "file": "guns/g142.json" },
+    { "id": 949, "name": "Harpy", "rarity": 3, "clip": 30, "category": 3, "file": "guns/g949.json" },
+    { "id": 654, "name": "Black Mamba", "rarity": 4, "clip": 30, "category": 1, "file": "guns/g654.json" },
+    { "id": 1380, "name": "Sparkling Horn", "rarity": 4, "clip": 8, "category": 2, "file": "guns/g1380.json", "rail": true },
+    { "id": 1714, "name": "Dragoneer", "rarity": 5, "clip": 20, "category": 6, "file": "guns/g1714.json" },
+    { "id": 1402, "name": "Jet Dragon", "rarity": 5, "clip": 12, "category": 1, "file": "guns/g1402.json", "flame": true },
+    { "id": 1343, "name": "Laser Cat Rifle", "rarity": 5, "clip": 12, "category": 1, "file": "guns/g1343.json", "laser": true }
+  ]
+}

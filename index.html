@@ -10,12 +10,23 @@
 :root{--bg:#f6f5f1;--card:#fff;--fg:#16161a;--mut:#5f5f6b;--line:#e2e0d8;--acc:#3c7d00;--chip:#ecebe4}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0e10;--card:#15171b;--fg:#eceae4;--mut:#9a9aa6;--line:#25282e;--acc:#b4ff5a;--chip:#1d2026}}
 :root[data-theme="dark"]{--bg:#0d0e10;--card:#15171b;--fg:#eceae4;--mut:#9a9aa6;--line:#25282e;--acc:#b4ff5a;--chip:#1d2026}
+@font-face{font-family:'VCR OSD Mono';src:url('assets/arsenal/fonts/VCR_OSD_MONO.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
 *{box-sizing:border-box}
 html,body{overflow-x:hidden}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
 a{color:inherit}
 .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
 .mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+
+/* site-wide loading screen (masks the game + assets loading at page load) */
+#boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .5s ease,visibility .5s}
+#boot.done{opacity:0;visibility:hidden;pointer-events:none}
+#boot[hidden]{display:none}
+#boot .boot-in{display:flex;flex-direction:column;align-items:center;gap:18px}
+#boot .boot-brand{font-family:Inter,system-ui,sans-serif;font-size:clamp(44px,9vw,84px);font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--fg)}
+#boot .boot-bar{position:relative;width:220px;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+#boot .boot-bar i{position:absolute;top:0;bottom:0;left:0;width:40%;background:var(--acc);animation:bootbar 1.1s ease-in-out infinite}
+@keyframes bootbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
 /* hero: always dark */
 .hero{position:relative;overflow:hidden;margin-top:40px;border-radius:28px;background-color:#0b0b0f;color:#f4f2ee;padding:28px;display:flex;flex-direction:column;gap:12px;
@@ -62,35 +73,40 @@ a{color:inherit}
 .actions a{text-decoration:none;color:var(--acc)}
 .actions a:hover{text-decoration:underline}
 
-/* featured rows */
-.rows{display:flex;flex-direction:column;gap:64px;margin-bottom:64px;padding-top:34px}
-.row{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;padding:18px;
-  --from:polygon(0 0,0 0,0 100%,0 100%);--to:polygon(0 0,100% 0,100% 100%,0 100%)}
-
-/* slash cuts: a themed divider above each featured row, swept in once like a tracer */
-.row::before,.row::after{content:"";position:absolute;left:-1.5%;right:-1.5%;top:calc(-32px - var(--h)/2);height:var(--h);transform:rotate(var(--tilt));pointer-events:none}
-.row::before{background:var(--cut);clip-path:var(--to);transition:clip-path .55s cubic-bezier(.7,0,.2,1)}
-.row::after{background:linear-gradient(90deg,transparent,var(--glow),transparent) -30% 0/18% 100% no-repeat;filter:blur(1px);opacity:0}
-.cuts .row:not(.cut-in)::before{clip-path:var(--from)}
-.cuts .row.cut-in::after{animation:tracer .55s cubic-bezier(.7,0,.2,1)}
-@keyframes tracer{0%,85%{opacity:1}0%{background-position:-30% 0}100%{opacity:0;background-position:130% 0}}
-/* PassportSOL: perforated stamp edge in Solana colours */
-.row[data-cut=sol]{--h:4px;--tilt:-1.6deg;--glow:#fff;--cut:linear-gradient(90deg,#9945ff,#14f195)}
-.row[data-cut=sol]::before{mask:repeating-linear-gradient(90deg,#000 0 14px,transparent 14px 20px)}
-/* Pixel Arsenal: hazard tape */
-.row[data-cut=hazard]{--h:10px;--tilt:2deg;--glow:#ffe14a;--cut:repeating-linear-gradient(-45deg,#ff1744 0 7px,#16161a 7px 14px)}
-/* Monadrift: checkered finish line */
-.row[data-cut=checker]{--h:12px;--tilt:-2.4deg;--glow:#b4ff5a;--cut:conic-gradient(var(--fg) 25%,transparent 0 50%,var(--fg) 0 75%,transparent 0) 0 0/12px 12px}
-/* SS3-Rust: tapered sword slash in rust */
-.row[data-cut=blade]{--h:7px;--tilt:1.4deg;--glow:#fff3e0;--cut:linear-gradient(90deg,#7a2512,#ce422b 40%,#ffb08a 55%,#ce422b 70%,#7a2512);
-  --from:polygon(0 50%,0 50%,0 50%,0 50%);--to:polygon(0 50%,62% 0,100% 50%,62% 100%)}
-.row:hover{transform:none}
-.row>*{min-width:0}
-.row-text{display:flex;flex-direction:column;gap:10px}
-.row h3{font-size:26px;letter-spacing:-.02em}
-.row .sub{flex:0;font-size:15.5px}
-.pts{margin:0;padding-left:18px;color:var(--mut);font-size:14.5px;display:flex;flex-direction:column;gap:6px}
-.row .demo{order:-1}
+/* featured project switcher (single box) */
+.featured{margin-bottom:48px}
+.feat-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.feat-count{font-size:13px;color:var(--mut)}
+.feat-nav{display:flex;gap:8px}
+.feat-btn{font:13px ui-monospace,Consolas,monospace;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.feat-btn:hover,.feat-btn:focus-visible{border-color:var(--acc);outline:none}
+.feat-btn:disabled{opacity:.35;cursor:default}
+.feat-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.feat-tab{font:12.5px ui-monospace,Consolas,monospace;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;max-width:100%;text-align:left}
+.feat-tab[aria-selected=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.feat-tab:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.feat-box{position:relative;border:1px solid var(--line);border-radius:18px;background:var(--card);overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.06)}
+.feat-pane{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;padding:22px;opacity:0;transform:translateX(18px);transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1);pointer-events:none;position:absolute;inset:0;overflow:auto;scrollbar-width:thin}
+.feat-pane.is-on{opacity:1;transform:none;pointer-events:auto;position:relative}
+.feat-pane.is-out{opacity:0;transform:translateX(-14px)}
+.feat-pane[data-tone=arsenal]{--accent:#ff4458}
+.feat-pane[data-tone=sol]{--accent:#9945ff}
+.feat-pane[data-tone=monad]{--accent:#14f195}
+.feat-pane[data-tone=icy]{--accent:#7eb6e6;align-content:start}
+#demo-icy{align-self:start;width:100%}
+.feat-pane .meta .event{color:var(--accent)}
+.feat-text{display:flex;flex-direction:column;gap:10px;min-width:0}
+.feat-pane h3{margin:0;font-size:24px;letter-spacing:-.02em}
+.feat-pane .sub{margin:0;color:var(--mut);font-size:15px}
+.feat-pane .pts{margin:0;padding-left:18px;color:var(--mut);font-size:14px;display:flex;flex-direction:column;gap:5px}
+.feat-pane .demo{min-height:280px;display:flex;flex-direction:column;order:-1;width:100%}
+.feat-pane .demo > .dm-pass{flex:1;min-height:0}
+@media (min-width:760px){
+  .feat-pane{grid-template-columns:minmax(0,1fr);padding:26px 28px;gap:24px;align-items:start}
+}
+@media (prefers-reduced-motion:reduce){
+  .feat-pane{transition:none}
+}
 
 /* row demos (always dark, like the hero) */
 .demo{position:relative;min-height:260px;border-radius:12px;background:#0b0b0f;overflow:hidden;color:#f4f2ee;min-width:0;font-size:14px}
@@ -102,7 +118,7 @@ a{color:inherit}
 .dm-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
 /* 01 passport */
-.dm-pass{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dm-pass{padding:18px;display:flex;flex-direction:column;gap:12px;justify-content:space-between}
 .dm-big{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1}
 .dm-stamps{display:flex;flex-wrap:wrap;gap:6px}
 .dm-bar{position:relative;height:12px;margin-top:24px;background:#1b1e24;border-radius:6px}
@@ -123,35 +139,65 @@ a{color:inherit}
 .dm-slot canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .dm-label{flex:1;font-size:12.5px;min-height:1.3em}
 .dm-stage.ranged{padding:0}
+.dm-ark.real .dm-hero,.dm-ark.real .dm-flash{display:none}
+.dm-ark.real .dm-stage{height:210px;padding:0}
+.dm-ark.real.ranging-on .dm-stage{height:min(48vh,440px)}
+.dm-ark.real.ranging-on .dm-view{touch-action:none}
+.dm-ark.real .dm-stage.ranged,.dm-ark.real .dm-stage.yard-on{height:min(40vh,380px);background:linear-gradient(180deg,#5eb3f5 0%,#8ec8ea 48%,#7ec06a 48%,#3d8a28 100%)}
+.dm-ark.real .dm-stage.ranged .dm-view,.dm-ark.real .dm-stage.yard-on .dm-view{border-radius:0}
+.dm-view{width:100%;height:100%;display:block;border-radius:8px}
+#demo-arsenal .dm-top{display:none}
+.dm-inspect{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.dm-ark.real.ranging-on .dm-inspect{visibility:hidden}
+.dm-ark.real:not(.ranging-on) .dm-stage{overflow:hidden}
+.dm-ark.real:not(.ranging-on) .dm-view{filter:blur(8px) brightness(.72) saturate(.75);transform:scale(1.05)}
+.dm-ark.real .dm-armory{flex:1;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.dm-ark.real .dm-slot{display:flex;align-items:center;justify-content:center;min-height:0;height:100%}
+.dm-ark.real .dm-slot img,.dm-ark.real .dm-slot canvas{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#243044}
+/* arsenal's black box matches icy tower; only the eight gun tiles grow to fill it */
+#demo-arsenal{aspect-ratio:640/480;min-height:0;overflow:hidden}
+#demo-arsenal .dm-ark{flex:1;min-height:0}
+#demo-arsenal .dm-stage,#demo-arsenal .dm-foot{flex-shrink:0}
+.dm-slot{position:relative}
+.dm-rare{position:absolute;left:4px;top:4px;font:9px ui-monospace,Consolas,monospace;padding:2px 5px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff;line-height:1;pointer-events:none;text-transform:uppercase;letter-spacing:.04em}
+.dm-slot[aria-pressed=true]{box-shadow:0 0 0 1px #b4ff5a}
+.dm-ark.real{--pa-font:'VCR OSD Mono',ui-monospace,Consolas,monospace}
+.dm-ark.real .dm-top,.dm-ark.real .dm-label,.dm-ark.real .dm-btn,.dm-ark.real .dm-rare,.dm-ark.real .pa-hud{font-family:var(--pa-font)}
+.pa-hud{position:absolute;inset:0;pointer-events:none;z-index:4;font-family:var(--pa-font,ui-monospace,Consolas,monospace)}
+.pa-hud[hidden]{display:none!important}
+.pa-x{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;background:#fff;border-radius:50%;opacity:.95;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.pa-am{position:absolute;right:14px;bottom:14px;text-align:right;color:#e8f4ff}
+.pa-am b{font-size:28px;font-weight:700}
+.pa-am span{display:block;margin-top:2px;font-size:11px;color:#5bdcff;letter-spacing:.06em;text-transform:uppercase}
 .ranged .dm-hero,.ranged .dm-flash{display:none}
 .dm-range{display:block;width:100%;height:220px;border-radius:8px;cursor:crosshair;touch-action:none}
 .dm-range:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
 
+#demo-passport{aspect-ratio:640/480;height:auto;min-height:0}
 /* 03 monadrift: time-trial sim, embedded from the Monadrift repo's sim/ (copy of 33dba3c) */
 #demo-monad{min-height:520px}
 #demo-monad iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 
-/* 04 ss3 oracle */
-.dm-ss{padding:14px;display:flex;flex-direction:column;gap:10px}
-.dm-arena{position:relative;height:120px;border-bottom:1px dashed #25282e}
-.dm-g{position:absolute;bottom:4px;width:70px;--c:#b4ff5a}
-.dm-gl{left:12%}
-.dm-gr{right:12%;--c:#a855f7}
-.dm-hp{height:6px;margin-bottom:6px;background:#22252b;border-radius:3px;overflow:hidden}
-.dm-hp i{display:block;height:100%;width:100%;background:#ff5a5a;transition:width .3s}
-.dm-fig{position:relative;width:34px;height:60px;margin:0 auto;transition:transform .15s}
-.dm-hd{position:absolute;left:8px;top:0;width:18px;height:18px;background:var(--c)}
-.dm-bd{position:absolute;left:4px;top:20px;width:26px;height:26px;background:var(--c);opacity:.85}
-.dm-gr .dm-fig{transform:scaleX(-1)}
-.dm-gl.lunge .dm-fig{transform:translateX(10px)}
-.dm-gr.lunge .dm-fig{transform:scaleX(-1) translateX(10px)}
-.dm-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.dm-col{background:#101216;border:1px solid #1d2026;border-radius:8px;padding:8px;min-width:0}
-.dm-ch{font-size:12px;color:#9a9aa6;margin-bottom:4px}
-.dm-out{font-size:12px;min-height:6.5em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dm-ok{color:#b4ff5a}
-.dm-count{margin-left:auto;font-size:12px;color:#9a9aa6}
-.dm-note{font-size:11px;color:#6f6f7b}
+/* 04 icy tower */
+#demo-icy{display:flex;flex-direction:column;padding:0;height:auto;min-height:0;background:#121418;touch-action:manipulation}
+#demo-icy .dm-icy-stage{position:relative;width:100%;aspect-ratio:640/480;background:#2c315c;touch-action:none}
+#demo-icy .dm-icy-cv{position:absolute;inset:0;width:100%;height:100%;display:block;background:#2c315c;touch-action:none;outline:none;image-rendering:pixelated}
+#demo-icy #glcanvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#0b0b0f;outline:none}
+#demo-icy .dm-icy-hint{position:absolute;left:0;right:0;top:10px;margin:0;text-align:center;font:12px 'VCR OSD Mono',ui-monospace,Consolas,monospace;color:#f4f7fb;text-shadow:0 1px 2px #000;pointer-events:none}
+#demo-icy .dm-icy-hint[hidden]{display:none}
+#demo-icy .dm-icy-pad{display:none;justify-content:center;gap:8px;padding:8px;background:#121418}
+#demo-icy .dm-icy-pad[hidden]{display:none!important}
+#demo-icy .dm-icy-pad .dm-btn{min-width:72px;min-height:44px;font-family:'VCR OSD Mono',ui-monospace,Consolas,monospace}
+@media (pointer:coarse),(max-width:760px){
+  #demo-icy .dm-icy-pad{display:flex}
+  #demo-icy .dm-icy-hint{display:none}
+}
+#demo-icy .dm-icy-over{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(6,8,12,.82);text-align:center;padding:16px}
+#demo-icy .dm-icy-over[hidden]{display:none!important}
+#demo-icy .dm-icy-fell{margin:0;font:800 32px/1.1 'VCR OSD Mono',ui-monospace,Consolas,monospace;letter-spacing:.04em}
+#demo-icy .dm-icy-stat{margin:0;color:#d9d3c8;font:15px 'VCR OSD Mono',ui-monospace,Consolas,monospace}
+#demo-icy .dm-icy-restart{font:18px 'VCR OSD Mono',ui-monospace,Consolas,monospace;padding:12px 22px}
+#demo-icy .dm-icy-restart:hover,#demo-icy .dm-icy-restart:focus-visible{border-color:#b4ff5a;color:#b4ff5a}
 
 footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);color:var(--mut);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
@@ -163,9 +209,24 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   .brand{grid-column:1;grid-row:2;order:0;margin-top:0;font-size:clamp(72px,12vw,180px)}
   .lead{grid-column:1;grid-row:3}
   .links{grid-column:1;grid-row:4}
-  .row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;padding:28px}
-  .row .demo{order:0}
-  .row:nth-child(even) .demo{order:-1}
+}
+@media (min-width:900px) and (max-height:1080px){
+  .hero{margin-top:20px;padding:22px 28px}
+  .duck{height:260px}
+  .brand{font-size:clamp(64px,10vw,140px)!important}
+  .marquee{margin-top:18px;padding:10px 0}
+  .stats{margin-top:22px;gap:24px}
+  .stats b{font-size:30px}
+  .sec{margin:40px 0 14px;font-size:clamp(32px,5vw,56px)}
+  .featured{margin-bottom:32px}
+  .feat-pane{padding:18px}
+  .feat-pane .demo{min-height:220px}
+  .demo{min-height:200px}
+  .dm-ark.real .dm-stage{height:168px}
+  .dm-ark.real .dm-stage.ranged{height:min(36vh,320px)}
+  .row h3{font-size:22px}
+  .row .sub{font-size:14px}
+  .row .pts{font-size:13px;gap:3px;margin-top:0}
 }
 @media (prefers-reduced-motion:reduce){
   .card{transition:none}
@@ -177,6 +238,12 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
 </style>
 </head>
 <body>
+<div id="boot" aria-hidden="true">
+  <div class="boot-in">
+    <span class="boot-brand">neske</span>
+    <span class="boot-bar"><i></i></span>
+  </div>
+</div>
 <div class="wrap">
 <header class="hero" id="hero">
   <div class="duck" id="duck" role="img" aria-label="Animated duck sticker — click it" tabindex="0">
@@ -188,7 +255,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
     <p class="lead">CS student. I build AI agents, Solana apps, games and mods, and interactive web — mostly at hackathons, mostly shipped.</p>
     <div class="links">
       <a class="btn" href="https://github.com/0jz">GitHub ↗</a>
-      <a class="btn" href="#projects">Projects ↓</a>
+      <a class="btn" href="#featured">Projects ↓</a>
     </div>
   </div>
   <h1 class="brand">neske</h1>
@@ -202,13 +269,13 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
 </div>
 
 <div class="stats">
-  <div><b>15</b>projects</div>
+  <div><b>16</b>projects</div>
   <div><b>5+</b>hackathons</div>
   <div><b>5</b>live demos</div>
 </div>
 
 <main>
-<h2 class="sec" id="projects">Selected work (15)</h2>
+<h2 class="sec" id="projects">Selected work (16)</h2>
 <div class="filters mono" role="group" aria-label="Filter projects">
   <button aria-pressed="true" data-f="all">all</button>
   <button aria-pressed="false" data-f="ai">ai agents</button>
@@ -218,75 +285,90 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   <button aria-pressed="false" data-f="tools">tools</button>
 </div>
 
-<div class="rows">
-  <article class="card row" data-c="web3" data-cut="sol">
-    <div class="row-text">
-      <div class="meta mono"><span class="idx">01</span><span class="event">Solana</span></div>
-      <h3>PassportSOL</h3>
-      <p class="sub">Reputation passport for Solana wallets — collect identity stamps, mint a compact passport on-chain, gate airdrops against bots.</p>
-      <ul class="pts">
-        <li>Stamps from Gitcoin Passport, GitHub, ENS, SNS, SolanaID, wallet age and activity, plus optional Ethereum link via SIWE.</li>
-        <li>Passport is minted as a Solana Memo-program transaction — no custom program to deploy; anyone can verify any address.</li>
-        <li>Serverless claim route pays an SPL token only to wallets above the human score threshold.</li>
-      </ul>
-      <div class="tags"><span>TypeScript</span><span>React</span><span>Solana</span><span>Vite</span></div>
-      <div class="actions"><a href="https://passportsol.vercel.app">Live ↗</a><a href="https://github.com/0jz/passportsol">Code</a></div>
+<section class="featured" id="featured" aria-labelledby="projects">
+  <div class="feat-bar">
+    <span class="feat-count mono" id="feat-count" aria-live="polite">01 / 04</span>
+    <div class="feat-nav mono" role="group" aria-label="Browse featured projects">
+      <button type="button" class="feat-btn" id="feat-prev" aria-label="Previous featured project">←</button>
+      <button type="button" class="feat-btn" id="feat-next" aria-label="Next featured project">→</button>
     </div>
-    <div class="demo" id="demo-passport" role="group" aria-label="Passport demo: toggle identity stamps to raise the Gitcoin score, check the human threshold of 30, and mint a memo transaction."></div>
-  </article>
-
-  <article class="card row" data-c="games" data-cut="hazard">
-    <div class="row-text">
-      <div class="meta mono"><span class="idx">02</span><span class="event">Mod · Melty</span></div>
-      <h3>ULTRAKILL: Pixel Arsenal</h3>
-      <p class="sub">ULTRAKILL × Pixel Gun 3D — 1100+ Pixel Gun 3D weapons inside ULTRAKILL, loaded from your own copy of the game.</p>
-      <ul class="pts">
-        <li>Real models, textures and sounds read at runtime from the player's own Pixel Gun 3D install — no game files shipped.</li>
-        <li>PG3D-style armory (press B), charge-to-dash weapons and wiki-checked rarities.</li>
-        <li>Co-op on Melty Net; built as a BepInEx plugin.</li>
-      </ul>
-      <div class="tags"><span>C#</span><span>BepInEx</span><span>Unity</span></div>
-      <div class="actions"><a href="https://melty.gg/m/ultrakill-pixel-arsenal">Play on Melty ↗</a><a href="https://github.com/0jz/ultrakill-pixel-arsenal">Code</a></div>
-    </div>
-    <div class="demo" id="demo-arsenal" role="group" aria-label="Armory demo: a grid of procedurally generated pixel guns with rarity borders. Hover or focus shows a name, click shows a gun big with a muzzle flash, Shuffle makes a new grid."></div>
-  </article>
-
-  <article class="card row" data-c="web3 games" data-cut="checker">
-    <div class="row-text">
-      <div class="meta mono"><span class="idx">03</span><span class="event">Monad Blitz · 2026</span></div>
-      <h3>Monadrift</h3>
-      <p class="sub">On-chain checkpoint racer on Monad testnet — the track is revealed one checkpoint at a time and every steer is a real transaction.</p>
-      <ul class="pts">
-        <li>Commit-reveal seed: the track is derived on demand by the contract, and nobody can decode more than one segment ahead.</li>
-        <li>Humans and AI agents race under identical rules; per-session relayer wallets sign every move, so players never touch a key.</li>
-        <li>Sub-second Monad blocks are the game clock: decide, submit, confirm before the next checkpoint.</li>
-      </ul>
-      <div class="tags"><span>Solidity</span><span>Foundry</span><span>Node</span><span>ethers</span></div>
-      <div class="actions"><a href="https://monadrift.vercel.app">Play live ↗</a><a href="https://github.com/0jz/Monadrift">Code</a></div>
-    </div>
-    <div class="demo" id="demo-monad"><iframe src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible." loading="lazy"></iframe></div>
-  </article>
-
-  <article class="card row" data-c="games tools" data-cut="blade">
-    <div class="row-text">
-      <div class="meta mono"><span class="idx">04</span><span class="event">Rust port</span></div>
-      <h3>SS3-Rust</h3>
-      <p class="sub">A native Rust rewrite of Swords and Sandals 3, rebuilt from the original Flash files — bit-for-bit faithful combat, moddable through plain data files.</p>
-      <ul class="pts">
-        <li>Rules engine with a Flash-exact RNG; oracle tests run the decompiled ActionScript in Node and the Rust port side by side on the same random numbers and require identical results.</li>
-        <li>Own SWF renderer; lobby, town, shops, talents, inventory and the arena stable already playable.</li>
-        <li>107 weapons, 103 armour pieces, 53 spells and 24 champions as editable RON tables, validated on start.</li>
-      </ul>
-      <div class="tags"><span>Rust</span><span>ActionScript 2</span><span>SWF</span></div>
-      <div class="actions"><span class="mono" style="color:var(--mut)">Private repo · personal-use port</span></div>
-    </div>
-    <div class="demo" id="demo-ss3" role="group" aria-label="Oracle check demo: roll an attack and see the same random numbers and damage printed for the original and the Rust port, with HP bars for two gladiators."></div>
-  </article>
-</div>
+  </div>
+  <div class="feat-tabs mono" id="feat-tabs" role="tablist" aria-label="Featured projects"></div>
+  <div class="feat-box" id="feat-box" tabindex="0">
+    <article class="feat-pane is-on card" id="feat-slide-1" data-c="games" data-tone="arsenal" role="tabpanel" aria-labelledby="feat-tab-0">
+      <div class="demo" id="demo-arsenal" role="group" aria-label="Pixel Arsenal shooting range and armory with wiki rarities on each gun."></div>
+      <div class="feat-text">
+        <div class="meta mono"><span class="idx">01</span><span class="event">Mod · Melty</span></div>
+        <h3>ULTRAKILL: Pixel Arsenal</h3>
+        <p class="sub">ULTRAKILL × Pixel Gun 3D — 1100+ Pixel Gun 3D weapons inside ULTRAKILL, loaded from your own copy of the game.</p>
+        <ul class="pts">
+          <li>Real models, textures and sounds read at runtime from the player's own Pixel Gun 3D install — no game files shipped.</li>
+          <li>PG3D-style armory (press B), charge-to-dash weapons and wiki-checked rarities.</li>
+          <li>Co-op on Melty Net; built as a BepInEx plugin.</li>
+        </ul>
+        <div class="tags"><span>C#</span><span>BepInEx</span><span>Unity</span></div>
+        <div class="actions"><a href="https://melty.gg/m/ultrakill-pixel-arsenal">Play on Melty ↗</a><a href="https://github.com/0jz/ultrakill-pixel-arsenal">Code</a></div>
+      </div>
+    </article>
+    <article class="feat-pane card" id="feat-slide-2" data-c="games" data-tone="icy" role="tabpanel" hidden aria-labelledby="feat-tab-1">
+      <div class="demo" id="demo-icy" role="group" aria-label="Icy Tower — the real game compiled to WebAssembly, straight into gameplay. Move with A and D, jump with W. Fall and it restarts on its own."></div>
+      <div class="feat-text">
+        <div class="meta mono"><span class="idx">02</span><span class="event">Rust · WebAssembly</span></div>
+        <h3>Icy Tower</h3>
+        <p class="sub">The actual game, compiled to WebAssembly — jump straight into the climb, no menus, straight from the Rust rebuild.</p>
+        <ul class="pts">
+          <li>Same normal rules as the port: shrinking floors, a clock that speeds the tower up, and higher jumps the faster you run.</li>
+          <li>Stone walls sit on both edges of the shaft, and the floors land just inside them.</li>
+          <li>Combo jumps score before the meter runs out. Fall off the bottom and the tower resets on its own — straight back to the climb.</li>
+        </ul>
+        <div class="tags"><span>Rust</span><span>WebAssembly</span></div>
+        <div class="actions"><a href="https://github.com/0jz/icytower-rs">Code</a></div>
+      </div>
+    </article>
+    <article class="feat-pane card" id="feat-slide-3" data-c="web3 games" data-tone="monad" role="tabpanel" hidden aria-labelledby="feat-tab-2">
+      <div class="feat-text">
+        <div class="meta mono"><span class="idx">03</span><span class="event">Monad Blitz · 2026</span></div>
+        <h3>Monadrift</h3>
+        <p class="sub">On-chain checkpoint racer on Monad testnet — the track is revealed one checkpoint at a time and every steer is a real transaction.</p>
+        <ul class="pts">
+          <li>Commit-reveal seed: the track is derived on demand by the contract, and nobody can decode more than one segment ahead.</li>
+          <li>Humans and AI agents race under identical rules; per-session relayer wallets sign every move, so players never touch a key.</li>
+          <li>Sub-second Monad blocks are the game clock: decide, submit, confirm before the next checkpoint.</li>
+        </ul>
+        <div class="tags"><span>Solidity</span><span>Foundry</span><span>Node</span><span>ethers</span></div>
+        <div class="actions"><a href="https://monadrift.vercel.app">Play live ↗</a><a href="https://github.com/0jz/Monadrift">Code</a></div>
+      </div>
+      <div class="demo" id="demo-monad"><iframe src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible." loading="lazy"></iframe></div>
+    </article>
+    <article class="feat-pane card" id="feat-slide-4" data-c="web3" data-tone="sol" role="tabpanel" hidden aria-labelledby="feat-tab-3">
+      <div class="feat-text">
+        <div class="meta mono"><span class="idx">04</span><span class="event">Solana</span></div>
+        <h3>PassportSOL</h3>
+        <p class="sub">Reputation passport for Solana wallets — collect identity stamps, mint a compact passport on-chain, gate airdrops against bots.</p>
+        <ul class="pts">
+          <li>Stamps from Gitcoin Passport, GitHub, ENS, SNS, SolanaID, wallet age and activity, plus optional Ethereum link via SIWE.</li>
+          <li>Passport is minted as a Solana Memo-program transaction — no custom program to deploy; anyone can verify any address.</li>
+          <li>Serverless claim route pays an SPL token only to wallets above the human score threshold.</li>
+        </ul>
+        <div class="tags"><span>TypeScript</span><span>React</span><span>Solana</span><span>Vite</span></div>
+        <div class="actions"><a href="https://passportsol.vercel.app">Live ↗</a><a href="https://github.com/0jz/passportsol">Code</a></div>
+      </div>
+      <div class="demo" id="demo-passport" role="group" aria-label="Passport demo: toggle identity stamps to raise the Gitcoin score, check the human threshold of 30, and mint a memo transaction."></div>
+    </article>
+  </div>
+</section>
 
 <div class="grid">
+  <article class="card" data-c="games tools">
+    <div class="meta mono"><span class="idx">05</span><span class="event">Rust port</span></div>
+    <h3>SS3-Rust</h3>
+    <p>A native Rust rewrite of Swords and Sandals 3, rebuilt from the original Flash files — bit-for-bit faithful combat, moddable through plain data files.</p>
+    <div class="tags"><span>Rust</span><span>ActionScript 2</span><span>SWF</span></div>
+    <div class="actions"><span class="mono" style="color:var(--mut)">Private repo · personal-use port</span></div>
+  </article>
+
   <article class="card" data-c="tools">
-    <div class="meta mono"><span class="idx">05</span><span class="event">SheSafe Hackathon · 2026</span></div>
+    <div class="meta mono"><span class="idx">06</span><span class="event">SheSafe Hackathon · 2026</span></div>
     <h3>Skadi</h3>
     <p>Android anti-stalkerware tool for survivors of tech-facilitated abuse, disguised as a water tracker. Finds how a phone may be monitored and guides a safe response.</p>
     <div class="tags"><span>Kotlin</span><span>Android</span></div>
@@ -294,7 +376,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="ai web3">
-    <div class="meta mono"><span class="idx">06</span><span class="event">Startit Money Agent Hackathon</span></div>
+    <div class="meta mono"><span class="idx">07</span><span class="event">Startit Money Agent Hackathon</span></div>
     <h3>PayrollBot</h3>
     <p>Autonomous payroll agent: reads freelancer timesheet emails, checks them with Claude, and pays out in SOL — with a human approval step.</p>
     <div class="tags"><span>JavaScript</span><span>Claude</span><span>Solana</span></div>
@@ -302,7 +384,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="web3 tools">
-    <div class="meta mono"><span class="idx">07</span><span class="event">Colosseum Hackathon</span></div>
+    <div class="meta mono"><span class="idx">08</span><span class="event">Colosseum Hackathon</span></div>
     <h3>Dibs</h3>
     <p>Used PC parts marketplace you can trust: shop-tested hardware, Solana escrow, and payment released only after verification on the buyer's PC.</p>
     <div class="tags"><span>TypeScript</span><span>Solana</span></div>
@@ -310,7 +392,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="ai web3">
-    <div class="meta mono"><span class="idx">08</span><span class="event">AI agent</span></div>
+    <div class="meta mono"><span class="idx">09</span><span class="event">AI agent</span></div>
     <h3>ProfitHunter</h3>
     <p>Turns a vague startup idea into a paid demand test: researches the market, picks the most sellable wedge, and validates it with a small Solana payment.</p>
     <div class="tags"><span>TypeScript</span><span>Claude</span><span>Solana</span></div>
@@ -318,7 +400,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="ai">
-    <div class="meta mono"><span class="idx">09</span><span class="event">Multi-agent</span></div>
+    <div class="meta mono"><span class="idx">10</span><span class="event">Multi-agent</span></div>
     <h3>Unseen</h3>
     <p>Six AI agents adversarially review a strategy document and synthesize one executive briefing — the hard questions before the meeting.</p>
     <div class="tags"><span>Claude</span><span>Multi-agent</span></div>
@@ -326,7 +408,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="ai web3">
-    <div class="meta mono"><span class="idx">10</span><span class="event">Telegram bot</span></div>
+    <div class="meta mono"><span class="idx">11</span><span class="event">Telegram bot</span></div>
     <h3>Luna</h3>
     <p>Telegram bot that turns a product brief into an escrow-backed UGC campaign on Solana, with Claude-generated hooks, captions and shot lists.</p>
     <div class="tags"><span>TypeScript</span><span>Telegram</span><span>Solana</span></div>
@@ -334,7 +416,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="ai tools">
-    <div class="meta mono"><span class="idx">11</span><span class="event">Hackathon</span></div>
+    <div class="meta mono"><span class="idx">12</span><span class="event">Hackathon</span></div>
     <h3>SiteAudit</h3>
     <p>Screenshots a website, combines speed and behavior metrics, and has Claude rate each section and suggest fixes for speed and retention.</p>
     <div class="tags"><span>Python</span><span>Claude vision</span></div>
@@ -342,7 +424,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="web">
-    <div class="meta mono"><span class="idx">12</span><span class="event">WebGL</span></div>
+    <div class="meta mono"><span class="idx">13</span><span class="event">WebGL</span></div>
     <h3>Vessel</h3>
     <p>Studio landing page in one HTML file: physics hero with throwable shapes, a bent WebGL shader grid, and GSAP scroll choreography.</p>
     <div class="tags"><span>Three.js</span><span>GSAP</span><span>GLSL</span></div>
@@ -350,7 +432,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="web">
-    <div class="meta mono"><span class="idx">13</span><span class="event">WebGL</span></div>
+    <div class="meta mono"><span class="idx">14</span><span class="event">WebGL</span></div>
     <h3>Studio Foxfire</h3>
     <p>Agency landing page with a cursor-tracking low-poly 3D fox, procedural pixel-art forests and scroll-driven reveals.</p>
     <div class="tags"><span>Three.js</span><span>GSAP</span></div>
@@ -358,7 +440,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="tools">
-    <div class="meta mono"><span class="idx">14</span><span class="event">Desktop</span></div>
+    <div class="meta mono"><span class="idx">15</span><span class="event">Desktop</span></div>
     <h3>Viewing Tools</h3>
     <p>Fast, offline Windows viewers for PPTX, CSV and more on one shared PySide6 core. Files never leave your computer.</p>
     <div class="tags"><span>Python</span><span>Qt 6</span></div>
@@ -366,7 +448,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
   </article>
 
   <article class="card" data-c="games">
-    <div class="meta mono"><span class="idx">15</span><span class="event">Codeference workshop</span></div>
+    <div class="meta mono"><span class="idx">16</span><span class="event">Codeference workshop</span></div>
     <h3>Halloween Dino Runner</h3>
     <p>Halloween take on the offline dino game in TypeScript and canvas, built with spec-driven development and Claude Code.</p>
     <div class="tags"><span>TypeScript</span><span>Canvas</span></div>
@@ -382,10 +464,18 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
 </div>
 
 <script>
-const btns=document.querySelectorAll('.filters button'),cards=document.querySelectorAll('.card');
+const btns=document.querySelectorAll('.filters button'),cards=document.querySelectorAll('.grid .card'),featPanes=document.querySelectorAll('.feat-pane'),featured=document.getElementById('featured');
+const match=(el,f)=>f==='all'||el.dataset.c.split(' ').includes(f);
 btns.forEach(b=>b.onclick=()=>{
   btns.forEach(x=>x.setAttribute('aria-pressed',x===b));
-  cards.forEach(c=>c.hidden=b.dataset.f!=='all'&&!c.dataset.c.split(' ').includes(b.dataset.f));
+  cards.forEach(c=>c.hidden=!match(c,b.dataset.f));
+  let any=false;
+  featPanes.forEach(p=>{const ok=match(p,b.dataset.f);p.dataset.featHidden=ok?'':'1';if(ok)any=true;});
+  featured.hidden=!any;
+  if(any&&typeof window.__featGo==='function'){
+    const fi=[...featPanes].findIndex(p=>!p.dataset.featHidden);
+    if(fi>=0)window.__featGo(fi,true);
+  }
 });
 </script>
 
@@ -444,16 +534,6 @@ btns.forEach(b=>b.onclick=()=>{
 
 <script>
 /* featured row demos: one IIFE each */
-
-/* slash cuts: sweep each divider in once when its row scrolls into view */
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const rows = document.querySelector('.rows');
-  rows.classList.add('cuts');
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('cut-in'); io.unobserve(e.target); }
-  }), { rootMargin: '0px 0px -12% 0px' });
-  rows.querySelectorAll('.row').forEach(r => io.observe(r));
-}
 
 /* 01 PassportSOL: stamps -> Gitcoin score -> human threshold -> memo tx */
 (() => {
@@ -724,60 +804,865 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     show(items[0], false);
   };
   $('.dm-shuffle').onclick = () => { seed = Math.random() * 1e6 | 0; build(); };
-  build();
+
+  // Localhost only: real PG3D guns (wiki rarities) and V2 dummies, same sources as the v1 repo cover.
+  const RAR = [
+    { name: 'Common', color: '#9a9a9a' }, { name: 'Uncommon', color: '#4dcc4d' }, { name: 'Rare', color: '#3399ff' },
+    { name: 'Epic', color: '#ffe01a' }, { name: 'Legendary', color: '#ff2020' }, { name: 'Mythical', color: '#b34dff' }
+  ];
+  const startReal = async man => {
+    const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+    const base = 'assets/arsenal/';
+    const loadTex = (url, pixel) => new Promise(ok => {
+      new T.TextureLoader().load(url, tex => {
+        tex.colorSpace = T.SRGBColorSpace;
+        tex.wrapS = tex.wrapT = T.ClampToEdgeWrapping;
+        if (pixel) { tex.magFilter = T.NearestFilter; tex.minFilter = T.NearestFilter; tex.generateMipmaps = false; }
+        ok(tex);
+      }, undefined, () => ok(null));
+    });
+    const MELEE = new Set([1403]);
+    const gunRows = man.guns.filter(g => !MELEE.has(g.id)).sort((a, b) => a.rarity - b.rarity || a.name.localeCompare(b.name));
+    const guns = (await Promise.all(gunRows.map(async g => {
+      try {
+        const res = await fetch(base + g.file);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const tex = {};
+        for (const p of data.parts) if (p.tex && !tex[p.tex]) tex[p.tex] = await loadTex(base + 'guns/' + p.tex + '.png', true);
+        const ri = Math.max(0, Math.min(5, g.rarity));
+        return { ...g, data, tex, tier: RAR[ri] };
+      } catch { return null; }
+    }))).filter(Boolean);
+    if (!guns.length) throw new Error('no guns loaded');
+    let v2 = null;
+    const v2tex = {};
+    try {
+      v2 = await (await fetch(base + man.v2)).json();
+      for (const m of v2.mats) if (m.tex && !v2tex[m.tex]) v2tex[m.tex] = await loadTex(base + 'v2/' + m.tex, false);
+    } catch { v2 = null; }
+    const [sandbox, fx] = await Promise.all([
+      fetch(base + 'sandbox/scene.json').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(base + 'fx/fx.json').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]);
+    const envTex = {}, fxTex = {};
+    const pull = async (names, folder, bag) => {
+      await Promise.all([...new Set(names.filter(Boolean))].map(async n => {
+        const t = await loadTex(base + folder + n, true);
+        if (!t) return;
+        t.wrapS = t.wrapT = T.RepeatWrapping;
+        bag[n] = t;
+      }));
+    };
+    const pullEnv = async (names, folder, bag) => {
+      await Promise.all([...new Set(names.filter(Boolean))].map(async n => {
+        const t = await loadTex(base + folder + n, true);
+        if (!t) return;
+        t.wrapS = t.wrapT = T.RepeatWrapping;
+        bag[n] = t;
+      }));
+    };
+    if (sandbox) await pullEnv(sandbox.parts.map(p => p.tex), 'sandbox/tex/', envTex);
+    if (fx) {
+      const names = [];
+      Object.values(fx).forEach(v => {
+        (v.parts || []).forEach(p => names.push(p.tex));
+        if (v.beam) names.push(v.beam.tex);
+        (v.sprites || []).forEach(s => names.push(s.tex));
+      });
+      await pull(names, 'fx/tex/', fxTex);
+    }
+    const partGroup = (parts, maps, opts = {}) => {
+      const { flipZ = false, outdoor = false } = opts;
+      const g = new T.Group();
+      for (const p of parts || []) {
+        const n = p.pos.length / 3;
+        if (n < 3 || !p.tris || !p.tris.length) continue;
+        let pos = p.pos;
+        let tris = p.tris;
+        if (flipZ) {
+          const f = new Float32Array(p.pos.length);
+          for (let i = 0; i < p.pos.length; i += 3) {
+            f[i] = p.pos[i]; f[i + 1] = p.pos[i + 1]; f[i + 2] = -p.pos[i + 2];
+          }
+          pos = f;
+          const idx = new Uint32Array(p.tris.length);
+          for (let i = 0; i < p.tris.length; i += 3) {
+            idx[i] = p.tris[i]; idx[i + 1] = p.tris[i + 2]; idx[i + 2] = p.tris[i + 1];
+          }
+          tris = idx;
+        }
+        const geo = new T.BufferGeometry();
+        geo.setAttribute('position', new T.BufferAttribute(pos instanceof Float32Array ? pos : new Float32Array(pos), 3));
+        if (p.uv && p.uv.length === n * 2) geo.setAttribute('uv', new T.BufferAttribute(new Float32Array(p.uv), 2));
+        geo.setIndex(Array.isArray(tris) ? tris : new T.BufferAttribute(tris, 1));
+        geo.computeVertexNormals();
+        const map = p.tex ? maps[p.tex] : null;
+        const grass = outdoor && /StoneSmooth|ConstructPaint|Tile|grass/i.test((p.mat || '') + (p.name || ''));
+        const col = new T.Color().setRGB(p.color[0], p.color[1], p.color[2]);
+        if (grass && !map) col.setRGB(0.22, 0.55, 0.18);
+        const matOpts = {
+          map, color: col,
+          side: T.DoubleSide, transparent: !!p.water, opacity: p.water ? 0.75 : 1, depthWrite: !p.water
+        };
+        const mesh = outdoor || flipZ
+          ? new T.Mesh(geo, new T.MeshStandardMaterial({ ...matOpts, roughness: 0.94, metalness: grass ? 0 : 0.04 }))
+          : new T.Mesh(geo, new T.MeshLambertMaterial(matOpts));
+        g.add(mesh);
+      }
+      return g;
+    };
+    const makeSky = () => {
+      const cv = document.createElement('canvas');
+      cv.width = 4; cv.height = 512;
+      const ctx = cv.getContext('2d');
+      const g = ctx.createLinearGradient(0, 0, 0, 512);
+      g.addColorStop(0, '#3d8fd9');
+      g.addColorStop(0.42, '#7ec0ef');
+      g.addColorStop(0.72, '#a8d4f0');
+      g.addColorStop(1, '#cde8f5');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 4, 512);
+      const tex = new T.CanvasTexture(cv);
+      tex.colorSpace = T.SRGBColorSpace;
+      return tex;
+    };
+
+    const gunObject = g => {
+      const group = new T.Group();
+      for (const p of g.data.parts) {
+        const n = p.pos.length / 3;
+        if (n < 3 || !p.tris || !p.tris.length) continue;
+        const pos = new Float32Array(p.pos.length);
+        for (let i = 0; i < p.pos.length; i += 3) { pos[i] = p.pos[i]; pos[i + 1] = p.pos[i + 1]; pos[i + 2] = -p.pos[i + 2]; }
+        const idx = new Uint32Array(p.tris.length);
+        for (let i = 0; i < p.tris.length; i += 3) { idx[i] = p.tris[i]; idx[i + 1] = p.tris[i + 2]; idx[i + 2] = p.tris[i + 1]; }
+        const geo = new T.BufferGeometry();
+        geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+        if (p.uv && p.uv.length === n * 2) geo.setAttribute('uv', new T.BufferAttribute(new Float32Array(p.uv), 2));
+        geo.setIndex(new T.BufferAttribute(idx, 1));
+        geo.computeVertexNormals();
+        const map = p.tex ? g.tex[p.tex] : null;
+        group.add(new T.Mesh(geo, new T.MeshStandardMaterial({
+          map, color: map ? 0xffffff : new T.Color().setRGB(p.color[0], p.color[1], p.color[2]),
+          roughness: 0.42, metalness: 0.22, side: T.DoubleSide
+        })));
+      }
+      const box = new T.Box3().setFromObject(group);
+      const c = box.getCenter(new T.Vector3());
+      group.traverse(o => {
+        if (!o.geometry) return;
+        o.geometry.translate(-c.x, -c.y, -c.z);
+        o.geometry.computeBoundingBox();
+        o.geometry.computeBoundingSphere();
+      });
+      return group;
+    };
+    const VIEW_LEN = 0.52;
+    const poseViewModel = root => {
+      let box = new T.Box3().setFromObject(root);
+      let sz = box.getSize(new T.Vector3());
+      if (sz.y >= sz.x && sz.y >= sz.z) root.rotation.x = -Math.PI / 2;
+      else if (sz.x >= sz.y && sz.x >= sz.z) root.rotation.y = Math.PI / 2;
+      root.updateMatrixWorld(true);
+      box = new T.Box3().setFromObject(root);
+      sz = box.getSize(new T.Vector3());
+      const span = Math.max(sz.z, sz.x * 0.8, sz.y * 0.8, 0.01);
+      root.scale.setScalar(VIEW_LEN / span);
+      root.updateMatrixWorld(true);
+      box.setFromObject(root);
+      return new T.Vector3((box.min.x + box.max.x) * 0.5, (box.min.y + box.max.y) * 0.5, box.min.z);
+    };
+    const machine = () => {
+      if (!v2?.verts?.length) {
+        const g = new T.Group();
+        const m = new T.Mesh(
+          new T.BoxGeometry(0.55, 1.85, 0.42),
+          new T.MeshStandardMaterial({ color: '#e8a0a8', roughness: 0.4, metalness: 0.35 })
+        );
+        m.position.y = 0.92;
+        g.add(m);
+        return g;
+      }
+      const n = v2.verts.length / 3;
+      const pos = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) {
+        pos[i * 3] = v2.verts[i * 3];
+        pos[i * 3 + 1] = v2.verts[i * 3 + 2];
+        pos[i * 3 + 2] = -v2.verts[i * 3 + 1];
+      }
+      const uv = v2.uv && v2.uv.length === n * 2 ? new Float32Array(v2.uv) : null;
+      const group = new T.Group();
+      v2.tris.forEach((tris, s) => {
+        if (!tris.length) return;
+        const geo = new T.BufferGeometry();
+        geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+        if (uv) geo.setAttribute('uv', new T.BufferAttribute(uv, 2));
+        geo.setIndex(tris);
+        geo.computeVertexNormals();
+        const info = v2.mats[s] || {};
+        const map = info.tex ? v2tex[info.tex] : null;
+        const wing = /wing/i.test(info.name || '');
+        group.add(new T.Mesh(geo, new T.MeshStandardMaterial({
+          map, roughness: wing ? 0.5 : 0.34, metalness: wing ? 0.08 : 0.62,
+          emissive: new T.Color(wing ? '#ffd2a8' : '#1a0000'),
+          emissiveMap: wing ? map : null, emissiveIntensity: wing ? 1.1 : 0.18, side: T.DoubleSide
+        })));
+      });
+      const box = new T.Box3().setFromObject(group);
+      const sc = 1.9 / Math.max(0.001, box.max.y - box.min.y);
+      const model = new T.Group();
+      model.add(group);
+      group.scale.setScalar(sc);
+      group.position.y = -box.min.y * sc;
+      return model;
+    };
+
+    root.querySelector('.dm-ark').classList.add('real');
+    root.setAttribute('aria-label', 'Armory demo: real Pixel Gun weapons with wiki rarities. Shooting range uses the in-game sandbox map.');
+    $('.dm-shuffle').hidden = true;
+    rangeBtn.textContent = 'Armory view';
+    hits.textContent = guns.length + ' guns';
+    const hud = document.createElement('div');
+    hud.className = 'pa-hud';
+    hud.hidden = true;
+    hud.innerHTML = '<span class="pa-x" aria-hidden="true"></span><div class="pa-am"><div><b class="pa-mag">30</b>/<span class="pa-res">30</span></div><span class="pa-name">primary</span></div>';
+    stage.append(hud);
+    const view = document.createElement('canvas');
+    view.className = 'dm-view';
+    const inspect = document.createElement('canvas');
+    inspect.className = 'dm-inspect';
+    stage.append(view, inspect);
+    const setHud = g => {
+      const n = (g?.name || 'weapon').toUpperCase();
+      const clip = g?.clip ?? 30;
+      hud.querySelector('.pa-mag').textContent = clip;
+      hud.querySelector('.pa-res').textContent = clip;
+      const cat = g?.category ?? 1;
+      const slot = cat === 2 ? 'BACKUP' : cat === 3 ? 'SNIPER' : cat === 6 ? 'HEAVY' : 'PRIMARY';
+      hud.querySelector('.pa-name').textContent = n + ' · ' + slot;
+      hud.querySelector('.pa-name').style.color = g?.tier?.color || '#5bdcff';
+    };
+
+    const renderer = new T.WebGLRenderer({ canvas: view, antialias: true });
+    const gunR = new T.WebGLRenderer({ canvas: inspect, antialias: true, alpha: true });
+    gunR.setClearColor(0x000000, 0);
+    const gunScene = new T.Scene();
+    const gunCam = new T.PerspectiveCamera(26, 1, 0.05, 20);
+    gunScene.add(gunCam);
+    gunScene.add(new T.HemisphereLight('#ffffff', '#8aa4be', 1.7));
+    const gunKey = new T.DirectionalLight('#fff8ee', 2.8);
+    gunKey.position.set(1.4, 1.6, 1.1);
+    gunScene.add(gunKey);
+    let thumbR = null;
+    window.__arsenalStop = () => { renderer.setAnimationLoop(null); renderer.dispose(); gunR.dispose(); thumbR?.dispose(); };
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputColorSpace = T.SRGBColorSpace;
+    const scene = new T.Scene();
+    const skyGrad = makeSky();
+    scene.background = new T.Color('#0b0b0f');
+    const cam = new T.PerspectiveCamera(32, 1, 0.02, 220);
+    scene.add(cam);
+    const hemi = new T.HemisphereLight('#8ec8ea', '#2d6b22', 0.35);
+    scene.add(new T.AmbientLight('#fff4ea', 0.55), hemi);
+    const key = new T.DirectionalLight('#fff8ee', 2.05);
+    key.position.set(6, 14, 4);
+    scene.add(key);
+    const fill = new T.DirectionalLight('#b8d4ff', 0.35); fill.position.set(-4, 3, -2); scene.add(fill);
+    const rim = new T.PointLight('#ff2a3a', 0, 14); rim.position.set(-2.2, 2.2, -2); scene.add(rim);
+    const showPivot = new T.Group(); scene.add(showPivot);
+    const holder = new T.Group(); cam.add(holder); holder.visible = false;
+    const rangeRoot = new T.Group();
+    const yardParts = sandbox ? sandbox.parts.filter(p => p.mat !== 'ProBuilderDefault' && p.mat !== 'FinalFrameTB') : [];
+    const yard = sandbox ? partGroup(yardParts, envTex, { outdoor: true, flipZ: false }) : new T.Group();
+    rangeRoot.add(yard);
+    const proto = machine();
+    const spots = sandbox ? sandbox.dummies : [[-2.2, 0, -6.2], [0, 0, -6.2], [2.2, 0, -6.2]];
+    const dummyYaw = sandbox?.dummyYaw || 0;
+    const dummies = spots.map((spot, i) => {
+      const x = spot[0], y = spot.length > 2 ? spot[1] : 0, z = spot.length > 2 ? spot[2] : spot[1];
+      const d = proto.clone();
+      d.position.set(x, y, z);
+      d.rotation.y = dummyYaw;
+      d.userData = { x, y, z, yaw: dummyYaw, phase: i * 2.1, down: 0 };
+      rangeRoot.add(d);
+      return d;
+    });
+    if (sandbox?.camera && sandbox?.look) {
+      const eye = new T.Vector3(...sandbox.camera);
+      const look = new T.Vector3(...sandbox.look);
+      const fwd = look.clone().sub(eye); fwd.y = 0;
+      if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1);
+      fwd.normalize();
+      const right = new T.Vector3().crossVectors(fwd, new T.Vector3(0, 1, 0)).normalize();
+      const yaw = Math.atan2(-fwd.x, -fwd.z);
+      [-8, 0, 8].forEach((side, i) => {
+        const d = dummies[i];
+        if (!d) return;
+        const p = eye.clone().addScaledVector(fwd, 7.5).addScaledVector(right, side);
+        p.y = -0.5;
+        d.position.copy(p);
+        d.rotation.y = yaw;
+        d.userData.x = p.x; d.userData.y = p.y; d.userData.z = p.z;
+        d.userData.rx = right.x; d.userData.rz = right.z;
+        d.userData.yaw = yaw;
+      });
+    }
+    rangeRoot.visible = !!sandbox;
+    scene.add(rangeRoot);
+    if (sandbox) stage.classList.add('yard-on');
+
+    const views = guns.map(g => {
+      const base = gunObject(g);
+      const fps = base.clone();
+      const muzzle = poseViewModel(fps);
+      const show = base.clone();
+      poseViewModel(show);
+      return { g, show, fps, muzzle };
+    });
+
+    thumbR = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    thumbR.setSize(180, 96, false); thumbR.setClearColor(0x243044); thumbR.outputColorSpace = T.SRGBColorSpace;
+    const thumbS = new T.Scene();
+    thumbS.add(new T.HemisphereLight('#ffffff', '#8aa0b8', 2.4), new T.DirectionalLight('#ffffff', 2.2));
+    const thumbC = new T.PerspectiveCamera(28, 180 / 96, 0.05, 40);
+    thumbC.position.set(0, 0.14, 1.62);
+    thumbC.lookAt(0, 0, 0);
+    const thumbRigs = views.map(v => {
+      const clone = v.show.clone();
+      clone.updateMatrixWorld(true);
+      const fitted = new T.Box3().setFromObject(clone);
+      const fittedSize = fitted.getSize(new T.Vector3());
+      const fittedCenter = fitted.getCenter(new T.Vector3());
+      const span = Math.max(fittedSize.x, fittedSize.y, fittedSize.z, 0.001);
+      const fit = 1.08 / span;
+      clone.scale.multiplyScalar(fit);
+      clone.position.copy(fittedCenter).multiplyScalar(-fit);
+      const rig = new T.Group();
+      rig.add(clone);
+      return rig;
+    });
+    const thumbCv = views.map(() => {
+      const c = document.createElement('canvas');
+      c.width = 180; c.height = 96;
+      return c;
+    });
+    let thumbSpin = 0.4;
+    const paintThumbs = angle => {
+      thumbRigs.forEach((rig, i) => {
+        rig.rotation.y = angle + i * 0.35;
+        thumbS.add(rig);
+        thumbR.render(thumbS, thumbC);
+        thumbS.remove(rig);
+        thumbCv[i].getContext('2d').drawImage(thumbR.domElement, 0, 0);
+      });
+    };
+    armory.innerHTML = '';
+    const buttons = views.map((v, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'dm-slot'; b.style.borderColor = v.g.tier.color;
+      b.setAttribute('aria-label', v.g.name + ', ' + v.g.tier.name);
+      const badge = document.createElement('span');
+      badge.className = 'dm-rare'; badge.textContent = v.g.tier.name; badge.style.color = v.g.tier.color;
+      b.append(badge, thumbCv[i]);
+      const equipped = () => ranging ? 'click to fire · ' + views[cur].g.name : views[cur].g.name + ' · ' + views[cur].g.tier.name;
+      b.onmouseenter = b.onfocus = () => { label.textContent = v.g.name + ' · ' + v.g.tier.name; label.style.color = v.g.tier.color; };
+      b.onmouseleave = b.onblur = () => { label.textContent = equipped(); label.style.color = views[cur].g.tier.color; };
+      b.onclick = () => select(i, true);
+      armory.append(b);
+      return b;
+    });
+    paintThumbs(thumbSpin);
+
+    let cur = 0, ranging = false, spin = 0.65, kick = 0, flashT = -1e9, score = 0, visible = true, last = performance.now();
+    const flashL = new T.PointLight('#ffcf6b', 0, 3); holder.add(flashL);
+    const aim = new T.Vector2(), ray = new T.Raycaster();
+    const shots = [];
+    const up = new T.Vector3(0, 1, 0);
+    const SHOT = {
+      142: 'bullet', 286: 'grenade', 654: 'bullet', 949: 'bullet', 1380: 'rail',
+      1714: 'rocket', 1402: 'flame', 1343: 'laser'
+    };
+    const faceY = (obj, dir) => obj.quaternion.setFromUnitVectors(up, dir);
+    const sized = (key, len) => {
+      const src = fx && fx[key];
+      if (!src || !src.parts || !src.parts.length) return null;
+      const g = partGroup(src.parts, fxTex);
+      const size = new T.Box3().setFromObject(g).getSize(new T.Vector3());
+      const span = Math.max(size.x, size.y, size.z) || 1;
+      g.scale.setScalar(len / span);
+      return g;
+    };
+    const shotProto = {
+      rocket: sized('rocket', 0.62),
+      flame: sized('flame', 0.36),
+      grenade: sized('grenade', 0.28),
+      explosion: sized('explosion', 0.85)
+    };
+    const texOf = t => t && fxTex[t] || null;
+    const muzzleMap = texOf(fx?.bullet?.sprites?.[0]?.tex) || texOf(fx?.muzzle?.sprites?.[0]?.tex);
+    const shockMap = texOf((fx?.explosion?.sprites || []).find(s => /shock/i.test(s.name))?.tex) || texOf(fx?.explosion?.sprites?.[0]?.tex);
+    const beamMap = key => texOf(fx?.[key]?.beam?.tex);
+    const chest = new T.Vector3(), ab = new T.Vector3();
+    const along = (from, to, rad) => {
+      ab.subVectors(to, from);
+      const len2 = ab.lengthSq() || 1;
+      let best = null, bestT = 2;
+      for (const d of dummies) {
+        if (!d.visible || d.userData.down) continue;
+        d.getWorldPosition(chest);
+        const feetY = chest.y;
+        const headY = chest.y + 1.9;
+        const t = Math.max(0, Math.min(1, chest.clone().sub(from).dot(ab) / len2));
+        const close = new T.Vector3(from.x + ab.x * t, from.y + ab.y * t, from.z + ab.z * t);
+        const bodyY = Math.max(feetY, Math.min(headY, close.y));
+        const body = new T.Vector3(chest.x, bodyY, chest.z);
+        if (close.distanceTo(body) < rad && t <= bestT) { bestT = t; best = d; }
+      }
+      return best;
+    };
+    const aimedDummy = () => {
+      const hits = ray.intersectObjects(dummies.filter(d => d.visible && !d.userData.down), true);
+      if (!hits.length) return null;
+      let o = hits[0].object;
+      while (o && !dummies.includes(o)) o = o.parent;
+      return dummies.includes(o) ? o : null;
+    };
+    const knock = d => { d.userData.down = performance.now(); hits.textContent = 'hits ' + (++score); };
+    const puff = (pos, map, scale, life) => {
+      if (!map) return;
+      const s = new T.Sprite(new T.SpriteMaterial({ map, transparent: true, depthWrite: false, blending: T.AdditiveBlending }));
+      s.position.copy(pos); s.scale.setScalar(scale); scene.add(s);
+      shots.push({ obj: s, vel: new T.Vector3(), life, kind: 'flash', fade: life });
+    };
+    const boom = pos => {
+      const m = shotProto.explosion ? shotProto.explosion.clone(true) : new T.Group();
+      m.position.copy(pos); scene.add(m);
+      shots.push({ obj: m, vel: new T.Vector3(), life: 0.32, kind: 'boom', base: m.scale.x || 1 });
+      puff(pos, shockMap, 2.4, 0.28);
+    };
+    const spread = (dir, a) => dir.clone().add(new T.Vector3((Math.random() - 0.5) * a, (Math.random() - 0.5) * a, (Math.random() - 0.5) * a * 0.3)).normalize();
+    const streak = (from, dir, speed, life, len, tint, map, thick) => {
+      const geo = new T.PlaneGeometry(thick || 0.16, len);
+      const mat = new T.MeshBasicMaterial({
+        map: map || null, color: tint, transparent: true, opacity: 1,
+        side: T.DoubleSide, depthWrite: false, blending: T.AdditiveBlending
+      });
+      const g = new T.Group();
+      g.add(new T.Mesh(geo, mat));
+      const cross = new T.Mesh(geo, mat); cross.rotation.y = Math.PI / 2; g.add(cross);
+      launch(from, dir, speed, life, g, false, 1.15);
+    };
+    const launch = (from, dir, speed, life, obj, explode, rad) => {
+      obj.position.copy(from).addScaledVector(dir, 0.55);
+      if (!obj.isSprite) faceY(obj, dir);
+      scene.add(obj);
+      shots.push({ obj, vel: dir.clone().multiplyScalar(speed), life, explode, rad });
+    };
+    const radiusOf = obj => {
+      let r = 0.001;
+      obj.traverse(o => {
+        const p = o.geometry?.attributes?.position;
+        if (!p) return;
+        for (let i = 0; i < p.count; i++) r = Math.max(r, Math.hypot(p.getX(i), p.getY(i), p.getZ(i)));
+      });
+      return r;
+    };
+    const outdoorCam = () => {
+      if (!sandbox) return false;
+      const eye = sandbox.camera, look = sandbox.look;
+      cam.fov = 73;
+      cam.position.set(eye[0], eye[1], eye[2]);
+      cam.up.set(0, 1, 0);
+      cam.lookAt(look[0], eye[1], look[2]);
+      cam.near = 0.08;
+      cam.far = 520;
+      cam.updateProjectionMatrix();
+      return true;
+    };
+    const fit = () => {
+      if (sandbox && outdoorCam()) return;
+      cam.fov = 32;
+      const dist = radiusOf(showPivot) / Math.tan(T.MathUtils.degToRad(cam.fov / 2)) * 1.35;
+      cam.position.set(dist * 0.55, dist * 0.28, dist * 0.85);
+      cam.up.set(0, 1, 0);
+      cam.lookAt(0, 0, 0);
+      cam.updateProjectionMatrix();
+    };
+    const yardLook = () => {
+      scene.background = skyGrad;
+      scene.fog = new T.Fog('#9ed0ee', 90, 460);
+      hemi.intensity = ranging ? 0.72 : 0.58;
+      key.intensity = ranging ? 2.35 : 2.05;
+      key.position.set(8, 18, 2);
+      fill.intensity = ranging ? 0.5 : 0.42;
+      rim.intensity = ranging ? 0.4 : 0.15;
+    };
+    const dockInspect = () => {
+      if (ranging || !sandbox) {
+        scene.attach(showPivot);
+        showPivot.position.set(0, 0, 0);
+        showPivot.rotation.set(0, 0, 0);
+        showPivot.scale.setScalar(1);
+        return;
+      }
+      gunScene.attach(showPivot);
+      showPivot.position.set(0, 0, -1.28);
+      showPivot.rotation.set(0.1, spin, 0);
+      showPivot.scale.setScalar(1.72);
+    };
+    const syncRangeUi = () => {
+      rangeBtn.setAttribute('aria-pressed', String(ranging));
+      rangeBtn.textContent = ranging ? 'Armory view' : 'Firing range';
+      root.querySelector('.dm-ark')?.classList.toggle('ranging-on', ranging);
+      holder.visible = ranging;
+      showPivot.visible = !ranging;
+      dummies.forEach(d => { d.visible = ranging; });
+      hud.hidden = !(sandbox && ranging);
+      if (sandbox) {
+        yardLook();
+        outdoorCam();
+        stage.classList.add('ranged', 'yard-on');
+      } else {
+        scene.background = ranging ? skyGrad : new T.Color('#0b0b0f');
+        scene.fog = null;
+        hemi.intensity = 0.35;
+        key.intensity = 2.05;
+        rim.intensity = ranging ? 0.4 : 8;
+        if (!ranging) stage.classList.remove('ranged');
+      }
+      view.style.cursor = ranging ? 'crosshair' : 'default';
+      view.setAttribute('aria-label', ranging ? 'Firing range: click, or press Space, to shoot the V2 dummies' : 'Armory: inspect weapon over the sandbox yard');
+      if (ranging) {
+        hits.textContent = 'hits ' + score;
+        label.textContent = 'click to fire · ' + views[cur].g.name;
+        view.focus({ preventScroll: true });
+      } else {
+        shots.forEach(sh => sh.obj.parent && sh.obj.parent.remove(sh.obj)); shots.length = 0;
+        hits.textContent = guns.length + ' weapons';
+        label.textContent = views[cur].g.name + ' · ' + views[cur].g.tier.name;
+        if (!sandbox) fit();
+      }
+      setHud(views[cur].g);
+      dockInspect();
+    };
+    const select = i => {
+      cur = i;
+      const v = views[i];
+      showPivot.clear(); showPivot.add(v.show.clone());
+      holder.clear(); holder.add(flashL); holder.add(v.fps); flashL.position.copy(v.muzzle);
+      buttons.forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+      label.textContent = (ranging ? 'click to fire · ' : '') + v.g.name + ' · ' + v.g.tier.name; label.style.color = v.g.tier.color;
+      rim.color.set(v.g.tier.color); rim.intensity = ranging ? 1.2 : 8;
+      setHud(v.g);
+      dummies.forEach(d => { d.visible = ranging; });
+      if (ranging) outdoorCam();
+      else if (sandbox) outdoorCam();
+      else fit();
+      dockInspect();
+    };
+    const fire = () => {
+      const v = views[cur];
+      const kind = SHOT[v.g.id] || 'bullet';
+      ray.setFromCamera(aim, cam);
+      const dir = ray.ray.direction.clone().normalize();
+      const from = holder.localToWorld(v.muzzle.clone());
+      const onSight = aimedDummy();
+      if (onSight) knock(onSight);
+      flashT = performance.now(); kick = kind === 'rocket' || kind === 'laser' || kind === 'rail' ? 1 : 0.55;
+      puff(from, muzzleMap, 0.7, 0.07);
+      if (kind === 'melee') {
+        const to = from.clone().add(dir.clone().multiplyScalar(2.2));
+        const hit = along(from, to, 0.85);
+        if (hit) knock(hit);
+        puff(from.clone().addScaledVector(dir, 1.2), shockMap, 1.6, 0.16);
+        return;
+      }
+      if (kind === 'shotgun') {
+        for (let i = 0; i < 6; i++) streak(from, spread(dir, 0.16), 28, 0.5, 1.4, '#ffe14a', beamMap('bullet'), 0.12);
+      } else if (kind === 'rocket') {
+        const obj = shotProto.rocket ? shotProto.rocket.clone(true) : new T.Group();
+        launch(from, dir, 16, 2.2, obj, true, 1.15);
+      } else if (kind === 'flame') {
+        for (let i = 0; i < 5; i++) {
+          const obj = shotProto.flame ? shotProto.flame.clone(true) : null;
+          const d = spread(dir, 0.2);
+          if (obj) launch(from, d, 14, 0.8, obj, false, 0.9);
+          streak(from, d, 18, 0.6, 1.6, '#ff6a1a', beamMap('bullet'), 0.22);
+        }
+      } else if (kind === 'laser' || kind === 'rail') {
+        streak(from, dir, 48, 0.45, kind === 'rail' ? 14 : 8, kind === 'rail' ? '#7cf4ff' : '#b6ff4a', beamMap('laser') || beamMap('bullet'), kind === 'rail' ? 0.28 : 0.18);
+      } else if (kind === 'grenade') {
+        const obj = shotProto.grenade ? shotProto.grenade.clone(true) : new T.Group();
+        launch(from, spread(dir, 0.06), 18, 1.8, obj, true, 1.2);
+      } else streak(from, dir, 46, 0.5, 2.2, '#ffe56a', beamMap('bullet'), 0.14);
+    };
+    const toAim = e => {
+      const r = view.getBoundingClientRect();
+      aim.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+    };
+    view.addEventListener('pointerdown', e => { if (!ranging) return; toAim(e); fire(); });
+    view.addEventListener('pointermove', e => { if (ranging) toAim(e); });
+    view.tabIndex = 0;
+    view.addEventListener('keydown', e => {
+      if (!ranging) return;
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); aim.set(0, 0); fire(); }
+    });
+    rangeBtn.onclick = () => { ranging = !ranging; syncRangeUi(); };
+
+    const size = () => {
+      const w = stage.clientWidth, h = stage.clientHeight || 210;
+      renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix();
+      gunR.setSize(w, h, false); gunCam.aspect = w / Math.max(1, h); gunCam.updateProjectionMatrix();
+    };
+    new ResizeObserver(size).observe(stage);
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(view);
+    renderer.setAnimationLoop(now => {
+      if (!visible) return;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      if (!reduced) { thumbSpin += dt * 0.85; paintThumbs(thumbSpin); }
+      if (!ranging) {
+        if (!reduced) spin += 0.006;
+        if (sandbox) {
+          showPivot.position.set(0, 0, -1.28);
+          showPivot.rotation.set(0.1, spin, 0);
+          showPivot.scale.setScalar(1.72);
+          gunR.render(gunScene, gunCam);
+        } else showPivot.rotation.y = spin;
+      } else {
+        dummies.forEach(d => {
+          const u = d.userData;
+          if (!reduced) {
+            const s = Math.sin(now / 1600 + u.phase) * 0.45;
+            d.position.x = u.x + (u.rx || 0) * s;
+            d.position.z = u.z + (u.rz || 1) * s;
+          }
+          d.rotation.y = u.yaw || 0;
+          d.rotation.x = u.down ? 1.25 * Math.min(1, (now - u.down) / 160) : 0;
+          if (u.down && now - u.down > 1200) u.down = 0;
+        });
+        kick = reduced ? 0 : kick * 0.82;
+        const span = Math.tan(T.MathUtils.degToRad(cam.fov / 2)) * Math.max(0.6, cam.aspect) * 0.42;
+        const s = Math.min(1, span / 0.62);
+        holder.scale.setScalar(s);
+        holder.position.set(0.2 * s, -0.08 * s, -0.58 * s + kick * 0.06);
+        holder.rotation.set(aim.y * 0.18 + kick * 0.12, -aim.x * 0.22, 0);
+        flashL.intensity = Math.max(0, 1 - (now - flashT) / 90) * 5;
+        for (let i = shots.length - 1; i >= 0; i--) {
+          const sh = shots[i];
+          sh.life -= dt;
+          if (sh.kind === 'flash') {
+            const k = Math.max(0, sh.life / (sh.fade || 0.12));
+            sh.obj.traverse(o => { if (o.material) o.material.opacity = k; });
+            if (sh.life <= 0) { (sh.obj.parent || scene).remove(sh.obj); shots.splice(i, 1); }
+            continue;
+          }
+          if (sh.kind === 'boom') {
+            const k = 1 - sh.life / 0.32;
+            sh.obj.scale.setScalar((sh.base || 1) * (1 + k * 2.4));
+            if (sh.life <= 0) { scene.remove(sh.obj); shots.splice(i, 1); }
+            continue;
+          }
+          const next = sh.obj.position.clone().addScaledVector(sh.vel, dt);
+          const hit = along(sh.obj.position, next, sh.rad || 0.45);
+          const stop = hit || sh.life <= 0 || next.y < -1.2;
+          if (stop) {
+            if (hit) knock(hit);
+            if (sh.explode) boom(hit ? next : next);
+            scene.remove(sh.obj);
+            shots.splice(i, 1);
+          } else sh.obj.position.copy(next);
+        }
+      }
+      renderer.render(scene, cam);
+    });
+    rangeBtn.disabled = false;
+    const def = Math.max(0, guns.findIndex(g => g.id === 654));
+    select(def >= 0 ? def : 0);
+    size();
+    if (sandbox) {
+      ranging = true;
+      yardLook();
+      outdoorCam();
+      syncRangeUi();
+    }
+    window.__arsenalRangeOff = () => { if (ranging) { ranging = false; syncRangeUi(); } };
+  };
+
+  rangeBtn.disabled = true; label.textContent = 'loading guns…';
+  fetch('assets/arsenal/manifest.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('no manifest'); return r.json(); })
+    .then(startReal)
+    .catch(err => {
+      console.warn('Pixel Arsenal demo fell back to procedural preview:', err);
+      if (typeof window.__arsenalStop === 'function') { window.__arsenalStop(); window.__arsenalStop = null; }
+      root.querySelector('.dm-view')?.remove();
+      root.querySelector('.dm-inspect')?.remove();
+      root.querySelector('.pa-hud')?.remove();
+      root.querySelector('.dm-ark')?.classList.remove('real', 'ranging-on');
+      stage.classList.remove('ranged', 'yard-on');
+      rangeBtn.disabled = false;
+      label.textContent = 'serve over HTTP to load real guns';
+      build();
+    });
 })();
 
-/* 04 SS3-Rust: oracle check, simulated output */
+/* 04 Icy Tower: boot the real wasm game at page load (muted, straight into gameplay); fall back to the JS port (like Pixel Arsenal) */
 (() => {
-  const root = document.getElementById('demo-ss3');
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  root.innerHTML = `
-    <div class="dm-ss">
-      <div class="dm-arena">
-        <div class="dm-g dm-gl" style="--c:#b4ff5a"><div class="dm-hp"><i></i></div><div class="dm-fig"><span class="dm-hd"></span><span class="dm-bd"></span></div></div>
-        <div class="dm-g dm-gr" style="--c:#a855f7"><div class="dm-hp"><i></i></div><div class="dm-fig"><span class="dm-hd"></span><span class="dm-bd"></span></div></div>
-      </div>
-      <div class="dm-cols">
-        <div class="dm-col"><div class="dm-ch mono">AS2 (original)</div><div class="dm-out mono"></div></div>
-        <div class="dm-col"><div class="dm-ch mono">Rust (port)</div><div class="dm-out mono"></div></div>
-      </div>
-      <div class="dm-foot">
-        <button type="button" class="dm-btn dm-roll">Roll attack</button>
-        <span class="dm-count mono">oracle runs: 0 · mismatches: 0</span>
-      </div>
-      <div class="dm-note mono">demo: simulated output, not the real port</div>
-    </div>`;
-  const $ = s => root.querySelector(s);
-  const figs = [...root.querySelectorAll('.dm-g')], bars = [...root.querySelectorAll('.dm-hp i')];
-  const outs = [...root.querySelectorAll('.dm-out')], count = $('.dm-count');
-  const hp = [100, 100];
-  let runs = 0, n = 0, timers = [];
-  const paint = () => bars.forEach((b, i) => { b.style.width = hp[i] + '%'; });
-  const put = ([text, cls]) => outs.forEach(o => {
-    const d = document.createElement('div');
-    d.textContent = text; if (cls) d.className = cls;
-    o.append(d);
-  });
-  paint();
-  $('.dm-roll').onclick = () => {
-    timers.forEach(clearTimeout); timers = [];
-    const att = n % 2, def = 1 - att;
-    n++; runs++;
-    if (hp[def] <= 0) hp[def] = 100;                        // KO resets on the next roll
-    const r = Math.random(), dmg = 8 + Math.floor(r * 10);
-    const before = hp[def], after = Math.max(0, before - dmg);
-    const lines = [[`rng ${r.toFixed(4)}…`], [`do_attack → ${dmg} dmg`], [`hp ${before} → ${after}`], ['✓ identical', 'dm-ok']];
-    outs.forEach(o => { o.textContent = ''; });
-    hp[def] = after; paint();
-    if (!reduced) {
-      figs.forEach(f => f.classList.remove('lunge'));
-      figs[att].classList.add('lunge');
-      setTimeout(() => figs[att].classList.remove('lunge'), 200);
-    }
-    if (reduced) lines.forEach(put);
-    else lines.forEach((l, i) => timers.push(setTimeout(put, i * 180, l)));
-    count.textContent = `oracle runs: ${runs} · mismatches: 0`;
+  const root = document.getElementById('demo-icy');
+  const splash = document.getElementById('boot');
+
+  const reveal = () => {
+    if (!splash || splash.classList.contains('done')) return;
+    splash.classList.add('done');
+    setTimeout(() => { splash.hidden = true; }, 600);
   };
+  setTimeout(reveal, 6000);
+
+  addEventListener('feat-change', e => {
+    if (e.detail && e.detail.tone === 'icy' && document.getElementById('glcanvas')) {
+      const kick = () => { try { window.dispatchEvent(new Event('resize')); } catch {} };
+      requestAnimationFrame(kick);
+      setTimeout(kick, 400);
+      setTimeout(kick, 1200);
+    }
+  });
+
+  if (!root) { reveal(); return; }
+
+  const bootWasm = () => {
+    root.innerHTML = `
+      <div class="dm-icy-stage">
+        <canvas id="glcanvas" tabindex="1"></canvas>
+      </div>`;
+
+    const loadScript = src => new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = res;
+      s.onerror = () => rej(new Error('failed to load ' + src));
+      document.body.appendChild(s);
+    });
+    (async () => {
+      await loadScript('assets/icy/mq_shim.js');
+      await loadScript('assets/icy/mq_js_bundle.js');
+      load('assets/icy/icytower-rs.wasm');
+      setTimeout(reveal, 1800);
+    })().catch(e => { console.error('Icy Tower wasm boot failed:', e); reveal(); });
+  };
+
+  const fallback = () => {
+    console.warn('Icy Tower fell back to the JS port (real assets not served).');
+    const s = document.createElement('script'); s.src = 'assets/icy/game.js';
+    document.body.append(s);
+    reveal();
+  };
+
+  fetch('assets/icy/assets/data/FLOOR01.png', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('no assets'); bootWasm(); })
+    .catch(fallback);
+})();
+
+/* featured project switcher */
+(() => {
+  const panes = [...document.querySelectorAll('.feat-pane')];
+  const vis = () => panes.filter(p => !p.dataset.featHidden);
+  const tabsEl = document.getElementById('feat-tabs');
+  const box = document.getElementById('feat-box');
+  const countEl = document.getElementById('feat-count');
+  const prev = document.getElementById('feat-prev');
+  const next = document.getElementById('feat-next');
+  if (!panes.length || !tabsEl || !box) return;
+  let idx = 0;
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tabs = panes.map((p, i) => {
+    const t = document.createElement('button');
+    t.type = 'button'; t.className = 'feat-tab'; t.id = 'feat-tab-' + i;
+    t.textContent = p.querySelector('h3')?.textContent || ('Project ' + (i + 1));
+    t.setAttribute('role', 'tab');
+    t.setAttribute('aria-controls', p.id);
+    t.onclick = () => go(panes.indexOf(p));
+    tabsEl.append(t);
+    return t;
+  });
+
+  const syncUi = () => {
+    const list = vis();
+    const pos = Math.max(0, list.indexOf(panes[idx]));
+    countEl.textContent = `${String(pos + 1).padStart(2, '0')} / ${String(list.length).padStart(2, '0')}`;
+    tabs.forEach((t, i) => {
+      const on = i === idx && !panes[i].dataset.featHidden;
+      t.setAttribute('aria-selected', String(on));
+      t.hidden = !!panes[i].dataset.featHidden;
+    });
+    prev.disabled = pos <= 0;
+    next.disabled = pos >= list.length - 1;
+    if (idx === 0 && panes[0].dataset.tone === 'arsenal') {
+      /* range stays on while Pixel Arsenal pane is active */
+    } else if (typeof window.__arsenalRangeOff === 'function') window.__arsenalRangeOff();
+  };
+
+  const go = (i, instant) => {
+    const list = vis();
+    if (!list.length) return;
+    if (!list.includes(panes[i])) i = panes.indexOf(list[0]);
+    if (i === idx && panes[i].classList.contains('is-on') && !instant) return;
+    const out = panes[idx];
+    const inn = panes[i];
+    const ms = instant || reduced() ? 0 : 460;
+    if (out && out !== inn) {
+      out.classList.remove('is-on');
+      out.classList.add('is-out');
+      out.setAttribute('aria-hidden', 'true');
+    }
+    panes.forEach(p => { if (p !== inn) p.hidden = true; });
+    inn.hidden = false;
+    inn.classList.remove('is-out');
+    inn.classList.add('is-on');
+    inn.setAttribute('aria-hidden', 'false');
+    idx = i;
+    syncUi();
+    if (out && out !== inn) setTimeout(() => { out.classList.remove('is-out'); if (out !== inn) out.hidden = true; }, ms);
+    window.dispatchEvent(new CustomEvent('feat-change', { detail: { index: i, tone: inn.dataset.tone } }));
+  };
+  window.__featGo = go;
+
+  const step = d => {
+    const list = vis(); const pos = list.indexOf(panes[idx]); const n = list[pos + d];
+    if (n) go(panes.indexOf(n));
+  };
+  prev.onclick = () => step(-1);
+  next.onclick = () => step(1);
+  box.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('#demo-icy')) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+  });
+  syncUi();
+
+  const arsenalDemo = document.getElementById('demo-arsenal');
+  const otherDemos = [...document.querySelectorAll('.feat-pane .demo')].filter(d => d !== arsenalDemo && d.id !== 'demo-icy');
+  let lockedH = 0, lockedPane = 0;
+  const syncFeatDemos = () => {
+    if (!arsenalDemo) return;
+    const pane = arsenalDemo.closest('.feat-pane');
+    const showing = pane && !pane.hidden && pane.classList.contains('is-on');
+    if (showing) {
+      const h = Math.round(arsenalDemo.getBoundingClientRect().height);
+      const paneH = Math.round(pane.getBoundingClientRect().height);
+      if (h >= 80) lockedH = h;
+      if (paneH >= 80) lockedPane = paneH;
+    }
+    if (lockedH < 80) return;
+    otherDemos.forEach(d => { d.style.height = lockedH + 'px'; });
+    if (lockedPane >= 80) panes.forEach(p => { if (p !== pane) p.style.minHeight = lockedPane + 'px'; });
+  };
+  if (arsenalDemo) {
+    new ResizeObserver(syncFeatDemos).observe(arsenalDemo);
+    addEventListener('resize', syncFeatDemos);
+    addEventListener('feat-change', syncFeatDemos);
+    requestAnimationFrame(syncFeatDemos);
+  }
 })();
 </script>
 </body>

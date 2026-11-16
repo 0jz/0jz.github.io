@@ -100,7 +100,6 @@ a{color:inherit}
 .feat-pane .sub{margin:0;color:var(--mut);font-size:15px}
 .feat-pane .pts{margin:0;padding-left:18px;color:var(--mut);font-size:14px;display:flex;flex-direction:column;gap:5px}
 .feat-pane .demo{min-height:280px;display:flex;flex-direction:column;order:-1;width:100%}
-.feat-pane .demo > .dm-pass{flex:1;min-height:0}
 @media (min-width:760px){
   .feat-pane{grid-template-columns:minmax(0,1fr);padding:26px 28px;gap:24px;align-items:start}
 }
@@ -117,16 +116,58 @@ a{color:inherit}
 .dm-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#9a9aa6}
 .dm-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
-/* 01 passport */
-.dm-pass{padding:18px;display:flex;flex-direction:column;gap:12px;justify-content:space-between}
-.dm-big{font-size:64px;font-weight:800;letter-spacing:-.04em;line-height:1}
-.dm-stamps{display:flex;flex-wrap:wrap;gap:6px}
-.dm-bar{position:relative;height:12px;margin-top:24px;background:#1b1e24;border-radius:6px}
-.dm-fill{height:100%;width:0;background:#b4ff5a;border-radius:6px}
-.dm-bar::after{content:"";position:absolute;left:50%;top:-5px;bottom:-5px;width:2px;background:#f4f2ee}
-.dm-mark{position:absolute;left:50%;top:-22px;transform:translateX(-50%);font-size:11px;color:#9a9aa6;white-space:nowrap}
-.dm-status{font-size:14px;min-height:1.4em}
-.dm-tx{font-size:12px;color:#b4ff5a;word-break:break-all}
+/* 01 passport: real PassportSOL UI (Add Stamps step + PassportView card), zinc/Solana palette from the app */
+#demo-passport{background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif}
+.ps{flex:1;min-height:0;overflow:auto;padding:16px;display:grid;gap:12px;align-content:start}
+@media (min-width:700px){.ps{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+/* stacked on phones: too tall for the shared demo height lock, so size to content */
+@media (max-width:699px){#demo-passport{height:auto!important}}
+.ps-step{border:1px solid #52525b;background:#18181b;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.ps-head{display:flex;align-items:center;gap:10px}
+.ps-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:#3f3f46;color:#fff;flex-shrink:0}
+.ps-h3{margin:0;font-size:14px;font-weight:500}
+.ps-pill{margin-left:auto;font-size:11px;color:#71717a;background:#27272a;padding:2px 8px;border-radius:999px}
+.ps-pill.on{color:#14F195;background:rgba(20,241,149,.15);border:1px solid rgba(20,241,149,.25);font-weight:700}
+#demo-passport .ps-cap{margin:4px 0 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.ps-card{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;border:1px solid #3f3f46;background:#18181b;border-radius:12px;padding:8px 12px;opacity:.75;transition:background .2s,border-color .2s,opacity .2s}
+.ps-card:hover{opacity:1}
+.ps-card.on{opacity:1;cursor:default}
+.ps-card:focus-visible,.ps-go:focus-visible,.ps-qr:focus-visible{outline:2px solid #14F195;outline-offset:2px}
+.ps-ic{font-size:12px;font-weight:700;padding:0 2px;flex-shrink:0;min-width:28px}
+.ps-t{flex:1;min-width:0}
+.ps-t b{display:block;font-size:12px;font-weight:600;color:#fff}
+.ps-t small{display:block;font-size:10px;color:#71717a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps-st{font-size:10px;font-weight:700;color:#a1a1aa;flex-shrink:0;white-space:nowrap}
+.ps-st.wait{color:#71717a;font-weight:400;animation:ps-pulse 1s infinite}
+.ps-st.btn{color:#fff;background:#24292e;border:1px solid #444;border-radius:8px;padding:3px 10px;font-weight:500}
+@keyframes ps-pulse{50%{opacity:.4}}
+.ps-qr{width:100%;font:inherit;font-size:12px;font-weight:500;cursor:pointer;padding:8px;border-radius:12px;border:1px dashed rgba(0,194,255,.25);background:rgba(0,194,255,.05);color:#00C2FF}
+.ps-qr:disabled{opacity:.5;cursor:default}
+.ps-go{width:100%;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:9px 16px;border:0;border-radius:12px;background:#14F195;color:#000}
+.ps-go:disabled{opacity:.5;cursor:default}
+.ps-pp{border:1px solid #3f3f46;background:#18181b;border-radius:12px;overflow:hidden;font-family:ui-monospace,Consolas,monospace;align-self:start}
+.ps-pp>div{padding:12px 16px;border-bottom:1px solid #27272a}
+.ps-pp>div:last-child{border-bottom:0}
+.ps-top{display:flex;justify-content:space-between;align-items:flex-start;background:linear-gradient(135deg,rgba(153,69,255,.06),rgba(20,241,149,.04))}
+.ps-brand p{margin:0;font-size:12px;letter-spacing:.25em;text-transform:uppercase}
+.ps-score{text-align:right}
+.ps-score b{display:block;font-size:34px;line-height:1;color:#14F195}
+.ps-score p,.ps-mut{margin:4px 0 0;font-size:12px;color:#52525b}
+.ps-addr{display:flex;gap:12px;font-size:12px}
+.ps-addr span:first-child{color:#52525b;width:40px;flex-shrink:0}
+.ps-addr span:last-child{color:#a1a1aa;word-break:break-all}
+.ps-coll{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:#52525b;letter-spacing:.2em;text-transform:uppercase}
+.ps-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ps-chip{display:flex;align-items:center;gap:8px;border:1px solid;border-radius:8px;padding:5px 9px;animation:ps-in .3s ease-out}
+.ps-chip i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ps-chip b{display:block;font-size:10px;line-height:1}
+.ps-chip small{display:block;font-size:9px;color:#71717a;line-height:1;margin-top:2px}
+.ps-chip em{font-style:normal;font-size:9px;font-weight:700;margin-left:4px}
+.ps-seal{order:1;width:68px;height:68px;border-radius:50%;border:2px solid #00C2FF;color:#00C2FF;display:grid;place-items:center;text-align:center;font-size:9px;font-weight:700;line-height:1.2;padding:6px;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6);transform:rotate(-5deg);animation:ps-in .3s ease-out}
+.ps-empty{font-size:12px;color:#52525b;font-style:italic}
+.ps-tx{font-size:12px;color:#9945FF;word-break:break-all}
+@keyframes ps-in{from{opacity:0;transform:scale(.85)}}
+@media (prefers-reduced-motion:reduce){.ps-chip,.ps-seal{animation:none}.ps-st.wait{animation:none}}
 
 /* 02 armory */
 .dm-ark{padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -173,7 +214,6 @@ a{color:inherit}
 .dm-range{display:block;width:100%;height:220px;border-radius:8px;cursor:crosshair;touch-action:none}
 .dm-range:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
 
-#demo-passport{aspect-ratio:640/480;height:auto;min-height:0}
 /* 03 monadrift: time-trial sim, embedded from the Monadrift repo's sim/ (copy of 33dba3c) */
 #demo-monad{min-height:520px}
 #demo-monad iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
@@ -353,7 +393,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
         <div class="tags"><span>TypeScript</span><span>React</span><span>Solana</span><span>Vite</span></div>
         <div class="actions"><a href="https://passportsol.vercel.app">Live ↗</a><a href="https://github.com/0jz/passportsol">Code</a></div>
       </div>
-      <div class="demo" id="demo-passport" role="group" aria-label="Passport demo: toggle identity stamps to raise the Gitcoin score, check the human threshold of 30, and mint a memo transaction."></div>
+      <div class="demo" id="demo-passport" role="group" aria-label="PassportSOL demo: the app's Add Stamps step and passport card. Check stamps to raise the score past the human threshold of 20, then mint."></div>
     </article>
   </div>
 </section>
@@ -487,14 +527,21 @@ btns.forEach(b=>b.onclick=()=>{
   const bubble = host.querySelector('.bubble');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // stickers come from assets/telegram/<pack>/emoji.json (written by fetch.py); first file = idle loop
-  const files = [];
-  for (const p of ['UtyaDuck', 'BlackUtyaDuck', 'UtyaDuckFull']) {
-    try {
-      const m = await (await fetch(`assets/telegram/${p}/emoji.json`)).json();
-      for (const f in m) if (f.endsWith('.tgs')) files.push(`assets/telegram/${p}/${f}`);
-    } catch {}
-  }
+  // stickers: every _unique* color folder (listed in its emoji.json); _unique = yellow original.
+  // special/ (halloween etc.) exists recolored in every folder, so take it from _unique only to keep it rare.
+  const colors = ['', 'black', 'blue', 'brown', 'cyan', 'gray', 'green', 'lime', 'magenta', 'maroon', 'navy',
+    'neongreen', 'orange', 'palepink', 'pink', 'purple', 'red', 'teal', 'white'];
+  const special = ['black-chrome', 'dracula', 'evil-queen', 'freddy', 'ghost', 'ghostface', 'goose', 'grim-reaper',
+    'hello-kitty', 'jigsaw', 'mallard', 'pepe', 'pink-bow-card', 'pink-bow', 'plague-doctor', 'purple-devil',
+    'scissorhands', 'sheet-ghost', 'skeleton-suit', 'skeleton', 'sugar-skull', 'vampire-coffin', 'voldemort',
+    'wednesday', 'white-duck', 'woodoo', 'zombie'];
+  const files = (await Promise.all(colors.map(async c => {
+    const p = `assets/telegram/_unique${c && '_' + c}`;
+    try { return Object.keys(await (await fetch(`${p}/emoji.json`)).json()).filter(f => f.endsWith('.tgs')).map(f => `${p}/${f}`); }
+    catch { return []; }
+  }))).flat();
+  const IDLE = 'assets/telegram/_unique_black/004.tgs'; // default idle duck: black, waving
+  if (files.length) files.push(...special.map(s => `assets/telegram/_unique/special/${s}.tgs`));
   if (!files.length || !window.lottie) {
     stage.innerHTML = '<span class="duck-fallback" aria-hidden="true">🦆</span>';
     return;
@@ -508,17 +555,18 @@ btns.forEach(b=>b.onclick=()=>{
   const play = async (url, loop) => {
     const data = await load(url);
     anim?.destroy();
-    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: !reduced, animationData: data });
-    if (!loop) anim.addEventListener('complete', () => play(files[0], true));
+    // reduced motion: idle loop stays still, but a click (user-initiated) still plays its sticker once
+    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: !reduced || !loop, animationData: data });
+    if (!loop) anim.addEventListener('complete', () => play(IDLE, true));
   };
-  await play(files[0], true);
+  await play(IDLE, true);
 
   let bubbleTimer = 0;
   const react = () => {
     bubble.classList.add('show');
     clearTimeout(bubbleTimer);
     bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 1000);
-    if (!reduced) play(files[Math.floor(Math.random() * files.length)], false).catch(() => {});
+    play(files[Math.floor(Math.random() * files.length)], false).catch(() => {});
   };
   host.addEventListener('click', react);
   host.addEventListener('keydown', e => {
@@ -535,60 +583,113 @@ btns.forEach(b=>b.onclick=()=>{
 <script>
 /* featured row demos: one IIFE each */
 
-/* 01 PassportSOL: stamps -> Gitcoin score -> human threshold -> memo tx */
+/* 01 PassportSOL: the app's real "Add Stamps" step + PassportView card (from 0jz/passportsol), fed with demo data.
+   Scoring = Gitcoin base + STAMP_POINTS from src/lib/scoring.ts; "Verified Human" at the Gitcoin threshold (20). */
 (() => {
   const root = document.getElementById('demo-passport');
+  if (!root) return;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const stamps = [['GitHub', 5], ['ENS', 5], ['SNS', 5], ['Wallet 2y+', 15], ['100+ txs', 12]];
-  const BASE = 14, B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  const rand58 = n => Array.from({ length: n }, () => B58[Math.random() * B58.length | 0]).join('');
+  const BASE = 14, THRESHOLD = 20, SOL = '9xQeNESKEWt3hPa7cVb2LmK8sRq4ZyD6nF1uJ5gXo';
+  // [card label, description, icon, icon color, earned bg, stamps it earns: [chip label, sub, color, points]]
+  const cards = [
+    ['Solana Wallet', 'Wallet age & activity', 'SOL', '#9945FF', 'rgba(153,69,255,0.12)', [['Solana OG', '2y+ wallet', '#F59E0B', 15], ['Active', '100+ txs', '#00C2FF', 12]]],
+    ['Solana.id', 'On-chain identity profile', 'ID', '#14F195', 'rgba(20,241,149,0.1)', [['Solana.id', 'neske', '#14F195', 4]]],
+    ['.sol Domain', 'Solana Name Service', 'SOL', '#9945FF', 'rgba(153,69,255,0.15)', [['.sol', 'neske.sol', '#9945FF', 5]]],
+    ['GitHub', 'Verified developer account', 'GH', '#e2e8f0', '#1a1e24', [['GitHub', '0jz', '#e2e8f0', 5]]],
+  ];
   root.innerHTML = `
-    <div class="dm-pass">
-      <div class="dm-top mono"><span>Gitcoin score</span><span>base ${BASE}</span></div>
-      <div class="dm-big">${BASE}</div>
-      <div class="dm-stamps"></div>
-      <div class="dm-bar"><div class="dm-fill"></div><div class="dm-mark mono">human ≥ 30</div></div>
-      <div class="dm-status mono" role="status"></div>
-      <div class="dm-foot"><button type="button" class="dm-btn dm-mint">Mint passport</button><span class="dm-tx mono"></span></div>
+    <div class="ps">
+      <div class="ps-step">
+        <div class="ps-head"><span class="ps-num">3</span><h4 class="ps-h3">Add Stamps</h4><span class="ps-pill ps-count">optional</span></div>
+        <p class="ps-cap">Auto-detected</p><div class="ps-auto"></div>
+        <p class="ps-cap">Event badges</p><button type="button" class="ps-qr">[QR] Scan event QR</button>
+        <p class="ps-cap">Developer badges</p><div class="ps-dev"></div>
+        <button type="button" class="ps-go">Mint Passport →</button>
+      </div>
+      <div class="ps-pp" aria-live="polite">
+        <div class="ps-top">
+          <div class="ps-brand"><p style="color:#9945FF">Solana</p><p style="color:#14F195">Passport</p><p class="ps-mut ps-date"></p></div>
+          <div class="ps-score"><b class="ps-big">${BASE.toFixed(1)}</b><p class="ps-human"></p><p class="ps-split"></p></div>
+        </div>
+        <div><div class="ps-addr"><span>SOL</span><span>${SOL}</span></div></div>
+        <div><div class="ps-coll"><span>Badge collection</span><span class="ps-pill on ps-n">0 badges</span></div>
+          <div class="ps-chips"><span class="ps-empty">No badges collected yet — tap a stamp</span></div></div>
+        <div><div class="ps-mut ps-tx">Not minted yet</div></div>
+      </div>
     </div>`;
   const $ = s => root.querySelector(s);
-  const big = $('.dm-big'), fill = $('.dm-fill'), status = $('.dm-status'), tx = $('.dm-tx');
-  const on = new Set();
-  let shown = BASE, raf = 0;
-  const total = () => BASE + [...on].reduce((s, i) => s + stamps[i][1], 0);
-  const show = v => { big.textContent = v; fill.style.width = Math.min(100, v / 60 * 100) + '%'; };
+  const chips = $('.ps-chips'), big = $('.ps-big'), tx = $('.ps-tx');
+  const earned = []; // [label, sub, color, points, seal?]
+  let shown = BASE, raf = 0, minted = false;
+  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const rand58 = n => Array.from({ length: n }, () => B58[Math.random() * B58.length | 0]).join('');
+  const plural = n => `${n} badge${n === 1 ? '' : 's'}`;
+
   const animate = to => {
     cancelAnimationFrame(raf);
-    if (to === shown) return show(to);
     const from = shown, t0 = performance.now();
     const step = now => {
-      const k = reduced ? 1 : Math.min(1, (now - t0) / 350);
-      shown = Math.round(from + (to - from) * k);
-      show(shown);
+      const k = reduced ? 1 : Math.min(1, (now - t0) / 400);
+      shown = from + (to - from) * k; big.textContent = shown.toFixed(1);
       if (k < 1) raf = requestAnimationFrame(step);
     };
     step(t0);
   };
-  const update = () => {
-    const s = total(), human = s >= 30;
-    animate(s);
-    status.textContent = human ? 'Human — airdrop eligible' : 'Bot-like — airdrop locked';
-    status.style.color = human ? '#b4ff5a' : '#ffb36b';
-    tx.textContent = '';
+  const render = () => {
+    const bonus = earned.reduce((s, e) => s + e[3], 0), score = BASE + bonus, human = score >= THRESHOLD;
+    animate(score);
+    $('.ps-human').textContent = human ? 'Verified Human' : `< ${THRESHOLD} threshold`;
+    $('.ps-human').style.color = human ? '#14F195' : '#71717a';
+    $('.ps-split').textContent = bonus ? `${BASE.toFixed(1)} Gitcoin + ${bonus} pts` : '';
+    $('.ps-n').textContent = plural(earned.length);
+    const c = $('.ps-count');
+    c.textContent = earned.length ? plural(earned.length) : 'optional';
+    c.classList.toggle('on', earned.length > 0);
+    if (minted) { minted = false; tx.className = 'ps-mut ps-tx'; tx.textContent = 'Changed — mint again'; $('.ps-date').textContent = ''; }
   };
-  stamps.forEach(([name, pts], i) => {
+  const earn = list => {
+    chips.querySelector('.ps-empty')?.remove();
+    for (const e of list) {
+      earned.push(e);
+      const el = document.createElement('div');
+      if (e[4]) { el.className = 'ps-seal'; el.textContent = e[0]; }
+      else {
+        el.className = 'ps-chip';
+        el.style.cssText = `background:${e[2]}18;border-color:${e[2]}40`;
+        el.innerHTML = `<i style="background:${e[2]}"></i><div><b style="color:${e[2]}">${e[0]}</b><small>${e[1]}</small></div><em style="color:${e[2]}cc">+${e[3]}</em>`;
+      }
+      chips.append(el);
+    }
+    render();
+  };
+
+  cards.forEach(([label, desc, ic, color, bg, gives], i) => {
+    const dev = label === 'GitHub';
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'dm-btn'; b.setAttribute('aria-pressed', 'false');
-    b.textContent = `${name} +${pts}`;
+    b.type = 'button'; b.className = 'ps-card';
+    b.innerHTML = `<span class="ps-ic" style="color:${color}">${ic}</span><span class="ps-t"><b>${label}</b><small>${desc}</small></span><span class="ps-st${dev ? ' btn' : ''}">${dev ? 'Connect' : 'Check'}</span>`;
+    const st = b.querySelector('.ps-st');
     b.onclick = () => {
-      on.has(i) ? on.delete(i) : on.add(i);
-      b.setAttribute('aria-pressed', String(on.has(i)));
-      update();
+      if (b.classList.contains('on') || st.classList.contains('wait')) return;
+      st.className = 'ps-st wait'; st.textContent = dev ? 'Waiting...' : 'Checking...';
+      setTimeout(() => {
+        b.classList.add('on'); b.style.background = bg; b.style.borderColor = color + '33';
+        b.setAttribute('aria-disabled', 'true');
+        st.className = 'ps-st'; st.style.color = dev ? '#14F195' : color;
+        st.textContent = dev ? 'v Earned' : 'v ' + gives.map(g => g[1]).join(', ');
+        earn(gives);
+      }, reduced ? 0 : 500 + i * 120);
     };
-    $('.dm-stamps').append(b);
+    $(dev ? '.ps-dev' : '.ps-auto').append(b);
   });
-  $('.dm-mint').onclick = () => { tx.textContent = `memo tx ${rand58(3)}…${rand58(3)} ✓ (score ${total()})`; };
-  update();
+  $('.ps-qr').onclick = e => { e.currentTarget.disabled = true; earn([['Solana Breakpoint 2025', 'Verified', '#00C2FF', 8, true]]); };
+  $('.ps-go').onclick = () => {
+    minted = true;
+    $('.ps-date').textContent = new Date().toLocaleDateString();
+    tx.className = 'ps-tx';
+    tx.textContent = `${rand58(6)}...${rand58(4)} - memo tx (demo)`;
+  };
+  render();
 })();
 
 /* 02 ULTRAKILL: Pixel Arsenal armory */
@@ -1546,6 +1647,7 @@ btns.forEach(b=>b.onclick=()=>{
     (async () => {
       await loadScript('assets/icy/mq_shim.js');
       await loadScript('assets/icy/mq_js_bundle.js');
+      await loadScript('assets/icy/preload.js');
       load('assets/icy/icytower-rs.wasm');
       setTimeout(reveal, 1800);
     })().catch(e => { console.error('Icy Tower wasm boot failed:', e); reveal(); });

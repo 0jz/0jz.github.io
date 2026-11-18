@@ -41,11 +41,17 @@ a{color:inherit}
 .stk-layer{position:absolute;left:0;top:0;width:100%;height:0;z-index:40;pointer-events:none}
 .stk{isolation:isolate;position:absolute;width:var(--s);height:var(--s);transform:translate(-50%,-50%) rotate(var(--r,0deg));pointer-events:auto;cursor:grab;touch-action:none;transition:filter .2s,transform .2s}
 .stk img{width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
-.stk .holo{position:absolute;inset:0;overflow:hidden;pointer-events:none;-webkit-mask-size:100% 100%;mask-size:100% 100%;mix-blend-mode:screen;opacity:.35}
-/* the foil slides by transform (GPU), not background-position (repaint every move) */
-.stk .holo::before{content:"";position:absolute;left:0;top:0;width:300%;height:300%;will-change:transform;
-  background:repeating-linear-gradient(115deg,transparent 0 3.5%,#ff4fd8 4.5%,#ffe066 5.2%,#5cffb0 5.9%,#4fc3ff 6.6%,#b56bff 7.3%,transparent 8.3% 13.5%);
-  transform:translate(calc((var(--hx,.5) + var(--hs,0)) * -33.3%),calc(var(--hy,.5) * -66.6%))}
+/* holo tint near the cursor, only on near-white pixels (mask from freeze), multiplied in;
+   hue comes from the cursor's angle around the sticker (--h), so circling it cycles the colors */
+.stk .holo{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.85;
+  background:linear-gradient(115deg,hsl(calc(var(--h,0) * 1deg) 100% 68%),hsl(calc(var(--h,0) * 1deg + 60deg) 100% 68%));
+  --spot:radial-gradient(circle 160px at var(--mx,-999px) var(--my,-999px),#000 0,rgba(0,0,0,.6) 45%,transparent 100%);
+  -webkit-mask:var(--u) 0 0/100% 100% no-repeat,var(--spot);-webkit-mask-composite:source-in;
+  mask:var(--u) 0 0/100% 100% no-repeat,var(--spot);mask-composite:intersect}
+/* small glare, same light-only mask; color-dodge leaves dark untouched */
+.stk::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:color-dodge;
+  background:radial-gradient(circle 18px at var(--mx,-999px) var(--my,-999px),rgba(255,255,255,.8),transparent);
+  -webkit-mask:var(--u) 0 0/100% 100% no-repeat;mask:var(--u) 0 0/100% 100% no-repeat}
 .stk.lift,.stk.live{cursor:grabbing;filter:drop-shadow(0 14px 16px rgba(0,0,0,.55));transform:translate(-50%,-50%) perspective(500px) rotateY(var(--t,0deg)) rotate(var(--r,0deg)) scale(1.12);transition:filter .2s}
 .stk.live{pointer-events:none}
 .stk.live svg{display:block}
@@ -596,22 +602,23 @@ btns.forEach(b=>b.onclick=()=>{
   });
 
   /* ── holographic stickers: drag the duck to peel off a copy, drop to stick it on the page ── */
-  const SIZE = () => innerWidth < 760 ? 110 : 140, MAX = 12, KEY = 'duck-stickers';
+  const SIZE = () => innerWidth < 760 ? 110 : 140, MAX = 12;
   const layer = document.createElement('div');
   layer.className = 'stk-layer';
   document.body.append(layer);
-  // rainbow foil strip for the live (dragged) sticker; 3x wide so it can slide under the duck
-  const FOIL = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" preserveAspectRatio="none"><linearGradient id="g" x2="1" y2=".35" spreadMethod="repeat" gradientTransform="scale(.34)"><stop offset="0" stop-color="#ff4fd8" stop-opacity="0"/><stop offset=".1" stop-color="#ff4fd8"/><stop offset=".2" stop-color="#ffe066"/><stop offset=".3" stop-color="#5cffb0"/><stop offset=".4" stop-color="#4fc3ff"/><stop offset=".5" stop-color="#b56bff"/><stop offset=".6" stop-color="#b56bff" stop-opacity="0"/><stop offset="1" stop-color="#b56bff" stop-opacity="0"/></linearGradient><rect width="300" height="100" fill="url(#g)"/></svg>`);
   let fid = 0;
-  // wrap lottie's root group in a filter: white die-cut edge (+ masked rainbow foil when live)
+  const E3 = Math.exp(-3), holoW = m => { const t = (255 - m) / 20; return t >= 1 ? 0 : (Math.exp(-3 * t) - E3) / (1 - E3); };
+  // same curve as a filter lookup table (index = min(r,g,b), one entry per value 0..255)
+  const HOLO_TABLE = Array.from({ length: 256 }, (_, i) => holoW(i).toFixed(3)).join(' ');
+  // wrap lottie's root group in a filter: white die-cut edge (+ the same light-only holo tint as placed stickers when live)
   const dress = (svg, w, h, foil) => {
     const NS = 'http://www.w3.org/2000/svg', id = 'stk' + fid++, R = w * .028, pad = R * 2;
     const f = document.createElementNS(NS, 'filter');
     f.id = id;
     for (const [k, v] of Object.entries({ filterUnits: 'userSpaceOnUse', x: -pad, y: -pad, width: w + pad * 2, height: h + pad * 2, 'color-interpolation-filters': 'sRGB' })) f.setAttribute(k, v);
-    f.innerHTML = `<feMorphology in="SourceAlpha" operator="dilate" radius="${R}" result="d"/><feFlood flood-color="#fff"/><feComposite in2="d" operator="in" result="edge"/>` + (foil
-      ? `<feImage href="${FOIL}" x="${-w}" y="0" width="${w * 3}" height="${h}" preserveAspectRatio="none" result="f"/><feComposite in="f" in2="d" operator="in" result="fi"/><feColorMatrix in="fi" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .35 0" result="fa"/><feMerge result="art"><feMergeNode in="edge"/><feMergeNode in="SourceGraphic"/></feMerge><feBlend in="fa" in2="art" mode="screen"/>`
-      : `<feMerge><feMergeNode in="edge"/><feMergeNode in="SourceGraphic"/></feMerge>`);
+    f.innerHTML = `<feMorphology in="SourceAlpha" operator="dilate" radius="${R}" result="d"/><feFlood flood-color="#fff"/><feComposite in2="d" operator="in" result="edge"/><feMerge result="art"><feMergeNode in="edge"/><feMergeNode in="SourceGraphic"/></feMerge>` + (foil
+      ? `<feColorMatrix in="art" values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0" result="r"/><feColorMatrix in="art" values="0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0" result="g"/><feColorMatrix in="art" values="0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/><feBlend in="r" in2="g" mode="darken" result="rg"/><feBlend in="rg" in2="b" mode="darken" result="m"/><feComponentTransfer in="m" result="w"><feFuncR type="table" tableValues="${HOLO_TABLE}"/></feComponentTransfer><feColorMatrix in="w" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0" result="wa"/><feFlood flood-color="hsl(0 100% 68%)" flood-opacity=".85"/><feComposite in2="wa" operator="in" result="tint"/><feBlend in="tint" in2="art" mode="multiply"/>`
+      : '');
     const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(NS, 'defs'), svg.firstChild);
     defs.append(f);
     const g = document.createElementNS(NS, 'g');
@@ -619,7 +626,7 @@ btns.forEach(b=>b.onclick=()=>{
     [...svg.children].filter(c => c !== defs).forEach(c => g.append(c));
     svg.append(g);
     svg.style.overflow = 'visible';
-    return f.querySelector('feImage');
+    return f.querySelector('feFlood:last-of-type');
   };
   // render one frame to a static SVG data URL (edge only): placed stickers are images, so they cost nothing per frame
   const freeze = (data, frame) => {
@@ -632,6 +639,9 @@ btns.forEach(b=>b.onclick=()=>{
     dress(svg, data.w, data.h, false);
     svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     svg.removeAttribute('style');
+    // an <img> ignores overflow:visible, so grow the viewBox to fit the white edge around art that touches the canvas
+    const p = data.w * .028 * 1.5;
+    svg.setAttribute('viewBox', `${-p} ${-p} ${data.w + p * 2} ${data.h + p * 2}`);
     const url = 'data:image/svg+xml,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
     a.destroy(); box.remove();
     return new Promise(res => {
@@ -640,30 +650,32 @@ btns.forEach(b=>b.onclick=()=>{
         try {
           const c = document.createElement('canvas'), px = Math.round(SIZE() * Math.min(2, devicePixelRatio || 1) * 1.15);
           c.width = c.height = px;
-          c.getContext('2d').drawImage(img, 0, 0, px, px);
-          res(c.toDataURL('image/png'));
-        } catch { res(url); }
+          const x = c.getContext('2d');
+          x.drawImage(img, 0, 0, px, px);
+          const png = c.toDataURL('image/png');
+          // holo mask: only very light pixels. d = 255 - min(r,g,b); full at d=0 (255), exponential falloff to 0 at d=20 (235)
+          const im = x.getImageData(0, 0, px, px), q = im.data;
+          for (let i = 0; i < q.length; i += 4) {
+            q[i + 3] *= holoW(Math.min(q[i], q[i + 1], q[i + 2]));
+          }
+          x.putImageData(im, 0, 0);
+          res({ png, mask: c.toDataURL('image/png') });
+        } catch { res({ png: url, mask: url }); }
       };
-      img.onerror = () => res(url);
+      img.onerror = () => res({ png: url, mask: url });
       img.src = url;
     });
   };
-  const save = () => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify([...layer.children].map(s => ({ f: s.dataset.f, fr: +s.dataset.fr, x: parseFloat(s.style.left) / innerWidth, y: parseFloat(s.style.top), r: +s.dataset.r }))));
-    } catch {}
-  };
-  const place = async (c, frame, x, y, r, quiet) => {
-    const half = SIZE() / 2, url = await freeze(c.data, frame), s = document.createElement('div');
+  const place = async (c, frame, x, y, r) => {
+    const half = SIZE() / 2, { png: url, mask } = await freeze(c.data, frame), s = document.createElement('div');
     x = Math.min(Math.max(x, half), document.documentElement.clientWidth - half); // never widen the page
-    s.className = 'stk' + (quiet || reduced ? '' : ' slap');
-    Object.assign(s.dataset, { f: c.url, fr: Math.round(frame), r });
+    s.className = 'stk' + (reduced ? '' : ' slap');
     s.style.cssText = `left:${x}px;top:${y}px;--r:${r}deg;--s:${SIZE()}px`;
     s.innerHTML = `<img alt="" src="${url}"><i class="holo"></i>`;
-    const h = s.lastChild;
-    h.style.webkitMaskImage = h.style.maskImage = `url("${url}")`;
+    s.style.setProperty('--u', `url("${mask}")`);
+    s.dataset.r = r;
     s.title = 'Drag to move · double-click to peel off';
-    s.ondblclick = () => { s.remove(); save(); };
+    s.ondblclick = () => s.remove();
     s.onpointerdown = e => { // move a placed sticker
       e.preventDefault(); try { s.setPointerCapture(e.pointerId); } catch {} s.classList.add('lift');
       const dx = parseFloat(s.style.left) - e.pageX, dy = parseFloat(s.style.top) - e.pageY;
@@ -672,14 +684,13 @@ btns.forEach(b=>b.onclick=()=>{
         s.style.left = Math.min(Math.max(m.pageX + dx, hw), document.documentElement.clientWidth - hw) + 'px';
         s.style.top = Math.max(m.pageY + dy, hw) + 'px';
       };
-      s.onpointerup = s.onpointercancel = () => { s.onpointermove = null; s.classList.remove('lift'); save(); };
+      s.onpointerup = s.onpointercancel = () => { s.onpointermove = null; s.classList.remove('lift'); };
     };
     layer.append(s);
     while (layer.children.length > MAX) layer.firstChild.remove();
-    if (!quiet) save();
   };
 
-  // drag the hero duck: past 6px it peels off a live, foil-shimmering copy that follows the pointer
+  // drag the hero duck: past 6px it peels off a live, holo-tinted copy that follows the pointer
   let drag = null;
   const startDrag = e => {
     if (!cur) return;
@@ -691,15 +702,15 @@ btns.forEach(b=>b.onclick=()=>{
     a.goToAndStop(anim?.currentFrame || 0, true);
     if (!reduced) a.play();
     const foil = dress(live.querySelector('svg'), cur.data.w, cur.data.h, true);
-    drag = { live, a, foil, c: cur, w: cur.data.w, lx: e.pageX, vx: 0 };
+    drag = { live, a, foil, c: cur, lx: e.pageX, ly: e.pageY, vx: 0, vy: 0 };
     moveDrag(e);
   };
   const moveDrag = e => {
     const d = drag;
-    d.vx = d.vx * .7 + (e.pageX - d.lx) * .3; d.lx = e.pageX;
+    d.vx = d.vx * .7 + (e.pageX - d.lx) * .3; d.vy = d.vy * .7 + (e.pageY - d.ly) * .3; d.lx = e.pageX; d.ly = e.pageY;
     const tilt = reduced ? 0 : Math.max(-25, Math.min(25, d.vx * 2));
     d.live.style.cssText += `;left:${e.pageX}px;top:${e.pageY}px;--t:${tilt}deg`;
-    d.foil.setAttribute('x', -d.w + (e.pageX % d.w)); // foil slides as you drag
+    if (Math.hypot(d.vx, d.vy) > .5) d.foil.setAttribute('flood-color', `hsl(${Math.round(Math.atan2(d.vy, d.vx) * 180 / Math.PI)} 100% 68%)`); // hue follows drag direction
   };
   host.addEventListener('pointerdown', e => {
     if (e.button) return;
@@ -732,23 +743,25 @@ btns.forEach(b=>b.onclick=()=>{
   host.addEventListener('touchmove', e => { if (drag) e.preventDefault(); }, { passive: false });
   host.addEventListener('dragstart', e => e.preventDefault());
 
-  // foil angle for every placed sticker follows pointer/scroll/tilt: CSS vars on the sticker layer only
-  // (on :root they restyle the whole page), written at most once per frame
+  // cursor = light: each placed sticker gets the pointer in its own (rotated) frame as --mx/--my, once per frame
   if (!reduced) {
-    const v = { hx: .5, hy: .5, hs: 0 };
-    let queued = false;
-    const flush = () => { queued = false; for (const k in v) layer.style.setProperty('--' + k, v[k].toFixed(3)); };
-    const set = (k, x) => { v[k] = x; if (!queued && layer.children.length) { queued = true; requestAnimationFrame(flush); } };
-    addEventListener('pointermove', e => { set('hx', e.clientX / innerWidth); set('hy', e.clientY / innerHeight); }, { passive: true });
-    addEventListener('scroll', () => set('hs', scrollY / 900 % 1), { passive: true });
-    addEventListener('deviceorientation', e => { if (e.gamma != null) set('hx', (e.gamma + 45) / 90); }, { passive: true });
+    let px = -1e4, py = -1e4, queued = false;
+    const flush = () => {
+      queued = false;
+      for (const s of layer.children) {
+        if (s.classList.contains('live')) continue;
+        const b = s.getBoundingClientRect(), r = s.dataset.r * Math.PI / 180, h = SIZE() / 2;
+        const dx = px - (b.left + b.width / 2), dy = py - (b.top + b.height / 2);
+        s.style.setProperty('--mx', (dx * Math.cos(r) + dy * Math.sin(r) + h).toFixed(1) + 'px');
+        s.style.setProperty('--my', (dy * Math.cos(r) - dx * Math.sin(r) + h).toFixed(1) + 'px');
+        s.style.setProperty('--h', Math.round(Math.atan2(dy, dx) * 180 / Math.PI));
+      }
+    };
+    const q = () => { if (!queued && layer.children.length) { queued = true; requestAnimationFrame(flush); } };
+    addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; q(); }, { passive: true });
+    addEventListener('scroll', q, { passive: true });
+    document.documentElement.addEventListener('mouseleave', () => { px = py = -1e4; q(); });
   }
-
-  // bring back this visitor's stickers
-  try {
-    for (const s of JSON.parse(localStorage.getItem(KEY) || '[]').slice(-MAX))
-      load(s.f).then(data => place({ url: s.f, data }, s.fr, s.x * innerWidth, s.y, s.r, true)).catch(() => {});
-  } catch {}
 
   if (!reduced) addEventListener('pointermove', e => {
     const x = e.clientX / innerWidth * 2 - 1, y = e.clientY / innerHeight * 2 - 1;

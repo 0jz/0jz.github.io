@@ -1,1 +1,15 @@
 .claude/
+# duck sticker tooling and working files live in ../duck-assets, not the site
+__pycache__/
+*.py[co]
+assets/telegram/*.py
+!assets/telegram/fetch.py
+assets/telegram/*palette*.json
+assets/telegram/palettes/
+assets/telegram/_recolor/
+assets/telegram/_new*/
+assets/telegram/_unpacked/
+assets/telegram/_unique*/_preview/
+assets/telegram/_unique*/audit.txt
+assets/temp telegram/
+tgs-viewer.html

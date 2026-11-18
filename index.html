@@ -610,6 +610,19 @@ btns.forEach(b=>b.onclick=()=>{
   const E3 = Math.exp(-3), holoW = m => { const t = (255 - m) / 20; return t >= 1 ? 0 : (Math.exp(-3 * t) - E3) / (1 - E3); };
   // same curve as a filter lookup table (index = min(r,g,b), one entry per value 0..255)
   const HOLO_TABLE = Array.from({ length: 256 }, (_, i) => holoW(i).toFixed(3)).join(' ');
+  // where the light comes from: mouse cursor, or phone tilt (tilt = {x, y} in -1..1, hue in deg) when there's no mouse
+  const light = { mouse: false, tilt: null, hue: 200 };
+  // the placed-sticker look (115deg hue -> hue+60 gradient, 85%, light falloff) as an image for the live sticker's filter;
+  // cx/cy = light center and rad = 160px radius, all in the sticker's own units
+  const tintCache = new Map();
+  const tintImg = (hue, cx, cy, w, h, rad) => {
+    const k = [hue, cx, cy, w, h].map(Math.round).join();
+    if (!tintCache.has(k)) {
+      if (tintCache.size > 300) tintCache.clear();
+      tintCache.set(k, 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><linearGradient id="g" x1=".05" y1=".29" x2=".95" y2=".71"><stop offset="0" stop-color="hsl(${hue} 100% 68%)"/><stop offset="1" stop-color="hsl(${hue + 60} 100% 68%)"/></linearGradient><radialGradient id="s" gradientUnits="userSpaceOnUse" cx="${cx}" cy="${cy}" r="${rad}"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="m"><rect width="${w}" height="${h}" fill="url(#s)"/></mask><rect width="${w}" height="${h}" fill="url(#g)" mask="url(#m)" opacity=".85"/></svg>`));
+    }
+    return tintCache.get(k);
+  };
   // wrap lottie's root group in a filter: white die-cut edge (+ the same light-only holo tint as placed stickers when live)
   const dress = (svg, w, h, foil) => {
     const NS = 'http://www.w3.org/2000/svg', id = 'stk' + fid++, R = w * .028, pad = R * 2;
@@ -617,7 +630,7 @@ btns.forEach(b=>b.onclick=()=>{
     f.id = id;
     for (const [k, v] of Object.entries({ filterUnits: 'userSpaceOnUse', x: -pad, y: -pad, width: w + pad * 2, height: h + pad * 2, 'color-interpolation-filters': 'sRGB' })) f.setAttribute(k, v);
     f.innerHTML = `<feMorphology in="SourceAlpha" operator="dilate" radius="${R}" result="d"/><feFlood flood-color="#fff"/><feComposite in2="d" operator="in" result="edge"/><feMerge result="art"><feMergeNode in="edge"/><feMergeNode in="SourceGraphic"/></feMerge>` + (foil
-      ? `<feColorMatrix in="art" values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0" result="r"/><feColorMatrix in="art" values="0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0" result="g"/><feColorMatrix in="art" values="0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/><feBlend in="r" in2="g" mode="darken" result="rg"/><feBlend in="rg" in2="b" mode="darken" result="m"/><feComponentTransfer in="m" result="w"><feFuncR type="table" tableValues="${HOLO_TABLE}"/></feComponentTransfer><feColorMatrix in="w" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0" result="wa"/><feFlood flood-color="hsl(0 100% 68%)" flood-opacity=".85"/><feComposite in2="wa" operator="in" result="tint"/><feBlend in="tint" in2="art" mode="multiply"/>`
+      ? `<feColorMatrix in="art" values="1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0" result="r"/><feColorMatrix in="art" values="0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0" result="g"/><feColorMatrix in="art" values="0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0" result="b"/><feBlend in="r" in2="g" mode="darken" result="rg"/><feBlend in="rg" in2="b" mode="darken" result="m"/><feComponentTransfer in="m" result="w"><feFuncR type="table" tableValues="${HOLO_TABLE}"/></feComponentTransfer><feColorMatrix in="w" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0" result="wa"/><feImage x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none"/><feComposite in2="wa" operator="in" result="tint"/><feBlend in="tint" in2="art" mode="multiply"/>`
       : '');
     const defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(NS, 'defs'), svg.firstChild);
     defs.append(f);
@@ -626,7 +639,7 @@ btns.forEach(b=>b.onclick=()=>{
     [...svg.children].filter(c => c !== defs).forEach(c => g.append(c));
     svg.append(g);
     svg.style.overflow = 'visible';
-    return f.querySelector('feFlood:last-of-type');
+    return f.querySelector('feImage');
   };
   // render one frame to a static SVG data URL (edge only): placed stickers are images, so they cost nothing per frame
   const freeze = (data, frame) => {
@@ -702,7 +715,7 @@ btns.forEach(b=>b.onclick=()=>{
     a.goToAndStop(anim?.currentFrame || 0, true);
     if (!reduced) a.play();
     const foil = dress(live.querySelector('svg'), cur.data.w, cur.data.h, true);
-    drag = { live, a, foil, c: cur, lx: e.pageX, ly: e.pageY, vx: 0, vy: 0 };
+    drag = { live, a, foil, c: cur, w: cur.data.w, h: cur.data.h, lx: e.pageX, ly: e.pageY, vx: 0, vy: 0, hue: light.hue };
     moveDrag(e);
   };
   const moveDrag = e => {
@@ -710,7 +723,16 @@ btns.forEach(b=>b.onclick=()=>{
     d.vx = d.vx * .7 + (e.pageX - d.lx) * .3; d.vy = d.vy * .7 + (e.pageY - d.ly) * .3; d.lx = e.pageX; d.ly = e.pageY;
     const tilt = reduced ? 0 : Math.max(-25, Math.min(25, d.vx * 2));
     d.live.style.cssText += `;left:${e.pageX}px;top:${e.pageY}px;--t:${tilt}deg`;
-    if (Math.hypot(d.vx, d.vy) > .5) d.foil.setAttribute('flood-color', `hsl(${Math.round(Math.atan2(d.vy, d.vx) * 180 / Math.PI)} 100% 68%)`); // hue follows drag direction
+    tintLive();
+  };
+  // the cursor sits on the live sticker's center, so its hue follows the drag direction (or the tilt on a phone)
+  const tintLive = () => {
+    const d = drag; if (!d) return;
+    const t = light.tilt;
+    if (t) d.hue = light.hue;
+    else if (Math.hypot(d.vx, d.vy) > .5) d.hue = Math.round(Math.atan2(d.vy, d.vx) * 180 / Math.PI);
+    const u = d.w / SIZE(); // px -> sticker units
+    d.foil.setAttribute('href', tintImg(Math.round(d.hue / 5) * 5, d.w / 2 * (1 + (t ? t.x : 0)), d.h / 2 * (1 + (t ? t.y : 0)), d.w, d.h, 160 * u));
   };
   host.addEventListener('pointerdown', e => {
     if (e.button) return;
@@ -750,7 +772,13 @@ btns.forEach(b=>b.onclick=()=>{
       queued = false;
       for (const s of layer.children) {
         if (s.classList.contains('live')) continue;
-        const b = s.getBoundingClientRect(), r = s.dataset.r * Math.PI / 180, h = SIZE() / 2;
+        const b = s.getBoundingClientRect(), r = s.dataset.r * Math.PI / 180, h = SIZE() / 2, t = light.tilt;
+        if (t) { // phone: tilt slides the light across every sticker and picks the color
+          s.style.setProperty('--mx', (h + t.x * h).toFixed(1) + 'px');
+          s.style.setProperty('--my', (h + t.y * h).toFixed(1) + 'px');
+          s.style.setProperty('--h', light.hue);
+          continue;
+        }
         const dx = px - (b.left + b.width / 2), dy = py - (b.top + b.height / 2);
         s.style.setProperty('--mx', (dx * Math.cos(r) + dy * Math.sin(r) + h).toFixed(1) + 'px');
         s.style.setProperty('--my', (dy * Math.cos(r) - dx * Math.sin(r) + h).toFixed(1) + 'px');
@@ -758,7 +786,24 @@ btns.forEach(b=>b.onclick=()=>{
       }
     };
     const q = () => { if (!queued && layer.children.length) { queued = true; requestAnimationFrame(flush); } };
-    addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; q(); }, { passive: true });
+    addEventListener('pointermove', e => {
+      if (e.pointerType === 'mouse') { light.mouse = true; light.tilt = null; }
+      px = e.clientX; py = e.clientY; q();
+    }, { passive: true });
+    // phone tilt, relative to how the phone is being held (baseline drifts slowly toward the current pose)
+    let g0 = null, b0 = null;
+    addEventListener('deviceorientation', e => {
+      if (light.mouse || e.gamma == null) return;
+      if (g0 == null) { g0 = e.gamma; b0 = e.beta; }
+      g0 += (e.gamma - g0) * .01; b0 += (e.beta - b0) * .01;
+      const c = v => Math.max(-1, Math.min(1, v / 25)), x = c(e.gamma - g0), y = c(e.beta - b0);
+      if (Math.hypot(x, y) > .08) light.hue = Math.round(Math.atan2(y, x) * 180 / Math.PI); // flat: keep last color
+      light.tilt = { x, y };
+      q(); tintLive();
+    }, { passive: true });
+    // iOS asks before sharing motion; ask on the first tap
+    if (window.DeviceOrientationEvent?.requestPermission)
+      addEventListener('touchend', () => DeviceOrientationEvent.requestPermission().catch(() => {}), { once: true });
     addEventListener('scroll', q, { passive: true });
     document.documentElement.addEventListener('mouseleave', () => { px = py = -1e4; q(); });
   }

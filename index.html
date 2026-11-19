@@ -1652,6 +1652,38 @@ btns.forEach(b=>b.onclick=()=>{
       scene.add(obj);
       shots.push({ obj, vel: dir.clone().multiplyScalar(speed), life, explode, rad });
     };
+    // Armory view: largest scale (max 1.72) at which the spinning gun stays inside the frame. Each gun's points are
+    // measured once as [distance from the spin axis, height]; a point swinging toward the camera projects largest
+    // (tangent r/sqrt(d²-r²)), and the 0.1 rad tilt adds up to 0.1·r of height.
+    const ARMORY_D = 1.28, armoryPts = [];
+    let armoryS = 1.72;
+    const fitArmory = () => {
+      const P = armoryPts[cur] ||= (() => {
+        const out = [], v = new T.Vector3(), show = views[cur].show;
+        show.updateMatrixWorld(true);
+        show.traverse(o => {
+          const p = o.geometry?.attributes?.position;
+          if (!p) return;
+          const step = Math.max(1, Math.floor(p.count / 3000));
+          for (let k = 0; k < p.count; k += step) {
+            v.fromBufferAttribute(p, k).applyMatrix4(o.matrixWorld);
+            out.push(Math.hypot(v.x, v.z), Math.abs(v.y));
+          }
+        });
+        return out;
+      })();
+      const d = ARMORY_D, tv = Math.tan(T.MathUtils.degToRad(gunCam.fov / 2)) * 0.88, th = tv * gunCam.aspect;
+      const fits = s => {
+        for (let k = 0; k < P.length; k += 2) {
+          const r = P[k] * s, y = (P[k + 1] + 0.1 * P[k]) * s;
+          if (r >= d * 0.9 || r / Math.sqrt(d * d - r * r) > th || y / (d - r) > tv) return false;
+        }
+        return true;
+      };
+      let sc = 1.72;
+      while (sc > 0.2 && !fits(sc)) sc *= 0.96;
+      armoryS = sc;
+    };
     const radiusOf = obj => {
       let r = 0.001;
       obj.traverse(o => {
@@ -1702,9 +1734,9 @@ btns.forEach(b=>b.onclick=()=>{
         return;
       }
       gunScene.attach(showPivot);
-      showPivot.position.set(0, 0, -1.28);
+      showPivot.position.set(0, 0, -ARMORY_D);
       showPivot.rotation.set(0.1, spin, 0);
-      showPivot.scale.setScalar(1.72);
+      showPivot.scale.setScalar(armoryS);
     };
     const syncRangeUi = () => {
       rangeBtn.setAttribute('aria-pressed', String(ranging));
@@ -1745,6 +1777,7 @@ btns.forEach(b=>b.onclick=()=>{
       cur = i;
       const v = views[i];
       showPivot.clear(); showPivot.add(v.show.clone());
+      fitArmory();
       holder.clear(); holder.add(flashL); holder.add(v.fps); flashL.position.copy(v.muzzle);
       buttons.forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
       label.textContent = (ranging ? 'click to fire · ' : '') + v.g.name + ' · ' + v.g.tier.name; label.style.color = v.g.tier.color;
@@ -1810,6 +1843,7 @@ btns.forEach(b=>b.onclick=()=>{
       renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix();
       gunR.setSize(w, h, false); gunCam.aspect = w / Math.max(1, h); gunCam.updateProjectionMatrix();
       if (sandbox) outdoorCam(); // field of view depends on the frame's shape
+      if (views[cur]) fitArmory(); // so does how big the armory gun can be
     };
     new ResizeObserver(size).observe(stage);
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(view);
@@ -1820,9 +1854,9 @@ btns.forEach(b=>b.onclick=()=>{
       if (!ranging) {
         if (!reduced) spin += 0.006;
         if (sandbox) {
-          showPivot.position.set(0, 0, -1.28);
+          showPivot.position.set(0, 0, -ARMORY_D);
           showPivot.rotation.set(0.1, spin, 0);
-          showPivot.scale.setScalar(1.72);
+          showPivot.scale.setScalar(armoryS);
           gunR.render(gunScene, gunCam);
         } else showPivot.rotation.y = spin;
       } else {

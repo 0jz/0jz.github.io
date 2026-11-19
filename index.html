@@ -18,15 +18,6 @@ a{color:inherit}
 .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
 .mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
 
-/* site-wide loading screen (masks the game + assets loading at page load) */
-#boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .5s ease,visibility .5s}
-#boot.done{opacity:0;visibility:hidden;pointer-events:none}
-#boot[hidden]{display:none}
-#boot .boot-in{display:flex;flex-direction:column;align-items:center;gap:18px}
-#boot .boot-brand{font-family:Inter,system-ui,sans-serif;font-size:clamp(44px,9vw,84px);font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--fg)}
-#boot .boot-bar{position:relative;width:220px;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
-#boot .boot-bar i{position:absolute;top:0;bottom:0;left:0;width:40%;background:var(--acc);animation:bootbar 1.1s ease-in-out infinite}
-@keyframes bootbar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
 /* hero: always dark */
 .hero{position:relative;overflow:hidden;margin-top:40px;border-radius:28px;background-color:#0b0b0f;color:#f4f2ee;padding:28px;display:flex;flex-direction:column;gap:12px;
@@ -271,12 +262,6 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
 </style>
 </head>
 <body>
-<div id="boot" aria-hidden="true">
-  <div class="boot-in">
-    <span class="boot-brand">neske</span>
-    <span class="boot-bar"><i></i></span>
-  </div>
-</div>
 <div class="wrap">
 <header class="hero" id="hero">
   <div class="duck" id="duck" role="img" aria-label="Animated duck sticker — click it" tabindex="0">
@@ -512,9 +497,9 @@ btns.forEach(b=>b.onclick=()=>{
 });
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie_light.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie_light.min.js"></script>
 <script>
-(async () => {
+addEventListener('DOMContentLoaded', () => new Promise(r => (window.requestIdleCallback || setTimeout)(r, { timeout: 1500 })).then(async () => {
   const host = document.getElementById('duck');
   const stage = host.querySelector('.stage');
   const bubble = host.querySelector('.bubble');
@@ -842,7 +827,7 @@ btns.forEach(b=>b.onclick=()=>{
       });
     }, { passive: true });
   }
-})();
+}));
 </script>
 
 <script>
@@ -853,7 +838,7 @@ btns.forEach(b=>b.onclick=()=>{
    and only tiles on screen (+200px) hold a live animation, every one playing like the native build; off-screen ones are destroyed.
    Tiles redraw at most 60/s (30/s on phones, staggered) whatever the screen's refresh rate.
    Click opens the big player (play/pause, frame scrubber, 0.5x/1x/2x); the grid pauses behind it. */
-(() => {
+addEventListener('DOMContentLoaded', () => { // lottie is deferred
   const root = document.getElementById('demo-tgs');
   if (!root) return;
   const files = ['_unique/001', '_unique_pink/004', '_unique_blue/012', '_unique/special/ghost', '_unique_green/020',
@@ -982,7 +967,7 @@ btns.forEach(b=>b.onclick=()=>{
   $('.tg-close').onclick = close;
   // keep keys (arrows on the scrubber) away from the slider's prev/next handler
   player.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Escape') close(); });
-})();
+});
 
 /* 02 ULTRAKILL: Pixel Arsenal armory */
 (() => {
@@ -1206,8 +1191,9 @@ btns.forEach(b=>b.onclick=()=>{
   const startReal = async man => {
     const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
     const base = 'assets/arsenal/';
+    // textures ship as lossless .webp next to the exported .png (re-run the conversion after re-exporting)
     const loadTex = (url, pixel) => new Promise(ok => {
-      new T.TextureLoader().load(url, tex => {
+      new T.TextureLoader().load(url.replace(/\.png$/, '.webp'), tex => {
         tex.colorSpace = T.SRGBColorSpace;
         tex.wrapS = tex.wrapT = T.ClampToEdgeWrapping;
         if (pixel) { tex.magFilter = T.NearestFilter; tex.minFilter = T.NearestFilter; tex.generateMipmaps = false; }
@@ -1920,7 +1906,10 @@ btns.forEach(b=>b.onclick=()=>{
   };
 
   rangeBtn.disabled = true; label.textContent = 'loading guns…';
-  fetch('assets/arsenal/manifest.json', { cache: 'no-store' })
+  // three.js + guns + sandbox (~1 MB, ~2 s CPU on phones) load only once the demo nears the screen
+  const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); boot(); } }, { rootMargin: '300px' });
+  near.observe(root);
+  const boot = () => fetch('assets/arsenal/manifest.json', { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('no manifest'); return r.json(); })
     .then(startReal)
     .catch(err => {
@@ -1937,18 +1926,10 @@ btns.forEach(b=>b.onclick=()=>{
     });
 })();
 
-/* 04 Icy Tower: boot the real wasm game at page load (muted, straight into gameplay; on phones only once its slide opens);
+/* 04 Icy Tower: boot the real wasm game the first time its slide opens (muted, straight into gameplay);
    fall back to the JS port (like Pixel Arsenal) */
 (() => {
   const root = document.getElementById('demo-icy');
-  const splash = document.getElementById('boot');
-
-  const reveal = () => {
-    if (!splash || splash.classList.contains('done')) return;
-    splash.classList.add('done');
-    setTimeout(() => { splash.hidden = true; }, 600);
-  };
-  setTimeout(reveal, 6000);
 
   addEventListener('feat-change', e => {
     if (e.detail && e.detail.tone === 'icy' && document.getElementById('glcanvas')) {
@@ -1959,7 +1940,7 @@ btns.forEach(b=>b.onclick=()=>{
     }
   });
 
-  if (!root) { reveal(); return; }
+  if (!root) return;
 
   const bootWasm = () => {
     root.innerHTML = `
@@ -2007,25 +1988,21 @@ btns.forEach(b=>b.onclick=()=>{
       await loadScript('assets/icy/mq_js_bundle.js');
       await loadScript('assets/icy/preload.js');
       load('assets/icy/icytower-rs.wasm');
-      setTimeout(reveal, 1800);
-    })().catch(e => { console.error('Icy Tower wasm boot failed:', e); reveal(); });
+    })().catch(e => { console.error('Icy Tower wasm boot failed:', e); });
   };
 
   const fallback = () => {
     console.warn('Icy Tower fell back to the JS port (real assets not served).');
     const s = document.createElement('script'); s.src = 'assets/icy/game.js';
     document.body.append(s);
-    reveal();
   };
 
   const start = () => fetch('assets/icy/assets/data/FLOOR01.png', { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('no assets'); bootWasm(); })
     .catch(fallback);
 
-  // Phones (same test as the touch pad CSS): don't download the game (wasm + music, ~2 MB) or hold the splash for it
-  // on page load; boot it the first time its slide is opened.
-  if (matchMedia('(pointer: coarse), (max-width: 760px)').matches && !root.closest('.feat-pane.is-on')) {
-    reveal();
+  // don't download the game (wasm + music, ~3 MB) on page load; boot it the first time its slide is opened
+  if (!root.closest('.feat-pane.is-on')) {
     root.innerHTML = `<div class="dm-icy-stage" style="display:grid;place-items:center;color:#f4f7fb;font:12px 'VCR OSD Mono',ui-monospace,Consolas,monospace">Loading Icy Tower…</div>`;
     const onOpen = e => {
       if (e.detail?.tone !== 'icy') return;

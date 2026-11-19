@@ -112,7 +112,7 @@ a{color:inherit}
 .feat-pane.is-on{opacity:1;transform:none;pointer-events:auto;position:relative}
 .feat-pane.is-out{opacity:0;transform:translateX(-14px)}
 .feat-pane[data-tone=arsenal]{--accent:#ff4458}
-.feat-pane[data-tone=sol]{--accent:#9945ff}
+.feat-pane[data-tone=tgs]{--accent:#2aabee}
 .feat-pane[data-tone=monad]{--accent:#14f195}
 .feat-pane[data-tone=icy]{--accent:#7eb6e6;align-content:start}
 #demo-icy{align-self:start;width:100%}
@@ -138,58 +138,20 @@ a{color:inherit}
 .dm-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#9a9aa6}
 .dm-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
-/* 01 passport: real PassportSOL UI (Add Stamps step + PassportView card), zinc/Solana palette from the app */
-#demo-passport{background:#09090b;color:#fafafa;font-family:system-ui,-apple-system,sans-serif}
-.ps{flex:1;min-height:0;overflow:auto;padding:16px;display:grid;gap:12px;align-content:start}
-@media (min-width:700px){.ps{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-/* stacked on phones: too tall for the shared demo height lock, so size to content */
-@media (max-width:699px){#demo-passport{height:auto!important}}
-.ps-step{border:1px solid #52525b;background:#18181b;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
-.ps-head{display:flex;align-items:center;gap:10px}
-.ps-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:#3f3f46;color:#fff;flex-shrink:0}
-.ps-h3{margin:0;font-size:14px;font-weight:500}
-.ps-pill{margin-left:auto;font-size:11px;color:#71717a;background:#27272a;padding:2px 8px;border-radius:999px}
-.ps-pill.on{color:#14F195;background:rgba(20,241,149,.15);border:1px solid rgba(20,241,149,.25);font-weight:700}
-#demo-passport .ps-cap{margin:4px 0 0;font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:.06em;font-weight:500}
-.ps-card{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;border:1px solid #3f3f46;background:#18181b;border-radius:12px;padding:8px 12px;opacity:.75;transition:background .2s,border-color .2s,opacity .2s}
-.ps-card:hover{opacity:1}
-.ps-card.on{opacity:1;cursor:default}
-.ps-card:focus-visible,.ps-go:focus-visible,.ps-qr:focus-visible{outline:2px solid #14F195;outline-offset:2px}
-.ps-ic{font-size:12px;font-weight:700;padding:0 2px;flex-shrink:0;min-width:28px}
-.ps-t{flex:1;min-width:0}
-.ps-t b{display:block;font-size:12px;font-weight:600;color:#fff}
-.ps-t small{display:block;font-size:10px;color:#71717a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ps-st{font-size:10px;font-weight:700;color:#a1a1aa;flex-shrink:0;white-space:nowrap}
-.ps-st.wait{color:#71717a;font-weight:400;animation:ps-pulse 1s infinite}
-.ps-st.btn{color:#fff;background:#24292e;border:1px solid #444;border-radius:8px;padding:3px 10px;font-weight:500}
-@keyframes ps-pulse{50%{opacity:.4}}
-.ps-qr{width:100%;font:inherit;font-size:12px;font-weight:500;cursor:pointer;padding:8px;border-radius:12px;border:1px dashed rgba(0,194,255,.25);background:rgba(0,194,255,.05);color:#00C2FF}
-.ps-qr:disabled{opacity:.5;cursor:default}
-.ps-go{width:100%;font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:9px 16px;border:0;border-radius:12px;background:#14F195;color:#000}
-.ps-go:disabled{opacity:.5;cursor:default}
-.ps-pp{border:1px solid #3f3f46;background:#18181b;border-radius:12px;overflow:hidden;font-family:ui-monospace,Consolas,monospace;align-self:start}
-.ps-pp>div{padding:12px 16px;border-bottom:1px solid #27272a}
-.ps-pp>div:last-child{border-bottom:0}
-.ps-top{display:flex;justify-content:space-between;align-items:flex-start;background:linear-gradient(135deg,rgba(153,69,255,.06),rgba(20,241,149,.04))}
-.ps-brand p{margin:0;font-size:12px;letter-spacing:.25em;text-transform:uppercase}
-.ps-score{text-align:right}
-.ps-score b{display:block;font-size:34px;line-height:1;color:#14F195}
-.ps-score p,.ps-mut{margin:4px 0 0;font-size:12px;color:#52525b}
-.ps-addr{display:flex;gap:12px;font-size:12px}
-.ps-addr span:first-child{color:#52525b;width:40px;flex-shrink:0}
-.ps-addr span:last-child{color:#a1a1aa;word-break:break-all}
-.ps-coll{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:#52525b;letter-spacing:.2em;text-transform:uppercase}
-.ps-chips{display:flex;flex-wrap:wrap;gap:8px}
-.ps-chip{display:flex;align-items:center;gap:8px;border:1px solid;border-radius:8px;padding:5px 9px;animation:ps-in .3s ease-out}
-.ps-chip i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.ps-chip b{display:block;font-size:10px;line-height:1}
-.ps-chip small{display:block;font-size:9px;color:#71717a;line-height:1;margin-top:2px}
-.ps-chip em{font-style:normal;font-size:9px;font-weight:700;margin-left:4px}
-.ps-seal{order:1;width:68px;height:68px;border-radius:50%;border:2px solid #00C2FF;color:#00C2FF;display:grid;place-items:center;text-align:center;font-size:9px;font-weight:700;line-height:1.2;padding:6px;box-shadow:inset 0 0 0 3px rgba(0,0,0,.6);transform:rotate(-5deg);animation:ps-in .3s ease-out}
-.ps-empty{font-size:12px;color:#52525b;font-style:italic}
-.ps-tx{font-size:12px;color:#9945FF;word-break:break-all}
-@keyframes ps-in{from{opacity:0;transform:scale(.85)}}
-@media (prefers-reduced-motion:reduce){.ps-chip,.ps-seal{animation:none}.ps-st.wait{animation:none}}
+/* 04 tgs viewer: sticker grid (frame 1, plays on hover) + big player */
+#demo-tgs{background:#17171c;padding:12px;gap:10px}
+.tg-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;align-content:start;scrollbar-width:thin}
+@media (max-width:520px){.tg-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tg-tile{aspect-ratio:1;padding:6px;border-radius:10px;border:1px solid #2a2a33;background:#1f1f26;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:#9a9aa6;font:10px ui-monospace,Consolas,monospace;min-width:0}
+.tg-tile:hover,.tg-tile:focus-visible{border-color:var(--accent);outline:none}
+.tg-tile>div{flex:1;width:100%;min-height:0}
+.tg-tile span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg-player{position:absolute;inset:0;z-index:2;background:#17171c;display:flex;flex-direction:column;gap:10px;padding:12px}
+.tg-player[hidden]{display:none}
+.tg-stage{flex:1;min-height:0;display:flex;justify-content:center}
+.tg-stage>div{height:100%;aspect-ratio:1;max-width:100%}
+.tg-range{flex:1;min-width:120px;accent-color:var(--accent)}
+.tg-player .dm-btn[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
 
 /* 02 armory */
 .dm-ark{padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -402,20 +364,20 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
       </div>
       <div class="demo" id="demo-monad"><iframe src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible." loading="lazy"></iframe></div>
     </article>
-    <article class="feat-pane card" id="feat-slide-4" data-c="web3" data-tone="sol" role="tabpanel" hidden aria-labelledby="feat-tab-3">
+    <article class="feat-pane card" id="feat-slide-4" data-c="tools" data-tone="tgs" role="tabpanel" hidden aria-labelledby="feat-tab-3">
       <div class="feat-text">
-        <div class="meta mono"><span class="idx">04</span><span class="event">Solana</span></div>
-        <h3>PassportSOL</h3>
-        <p class="sub">Reputation passport for Solana wallets — collect identity stamps, mint a compact passport on-chain, gate airdrops against bots.</p>
+        <div class="meta mono"><span class="idx">04</span><span class="event">Desktop</span></div>
+        <h3>TGS Viewer</h3>
+        <p class="sub">Desktop viewer for Telegram animated stickers (.tgs, gzipped Lottie) and plain Lottie JSON.</p>
         <ul class="pts">
-          <li>Stamps from Gitcoin Passport, GitHub, ENS, SNS, SolanaID, wallet age and activity, plus optional Ethereum link via SIWE.</li>
-          <li>Passport is minted as a Solana Memo-program transaction — no custom program to deploy; anyone can verify any address.</li>
-          <li>Serverless claim route pays an SPL token only to wallets above the human score threshold.</li>
+          <li>Open files or whole folders, or drag them onto the window; stickers sit on frame one and play on hover.</li>
+          <li>Click one for a large player with play/pause, a frame scrubber and 0.5x/1x/2x speed.</li>
+          <li>Handles hundreds of files: only on-screen stickers render, decoded 8 at a time. A from-scratch C++ build (Win32 + rlottie) ships as one ~2 MB exe instead of ~110 MB of Electron.</li>
         </ul>
-        <div class="tags"><span>TypeScript</span><span>React</span><span>Solana</span><span>Vite</span></div>
-        <div class="actions"><a href="https://passportsol.vercel.app">Live ↗</a><a href="https://github.com/0jz/passportsol">Code</a></div>
+        <div class="tags"><span>Electron</span><span>JavaScript</span><span>C++</span><span>rlottie</span></div>
+        <div class="actions"><a href="https://github.com/0jz/tgs-viewer/releases">Download ↗</a><a href="https://github.com/0jz/tgs-viewer">Code</a></div>
       </div>
-      <div class="demo" id="demo-passport" role="group" aria-label="PassportSOL demo: the app's Add Stamps step and passport card. Check stamps to raise the score past the human threshold of 20, then mint."></div>
+      <div class="demo" id="demo-tgs" role="group" aria-label="TGS Viewer demo: a folder of duck stickers. Hover or focus a sticker to play it, click it to open the player with a frame scrubber and speed controls."></div>
     </article>
   </div>
 </section>
@@ -557,39 +519,78 @@ btns.forEach(b=>b.onclick=()=>{
     'hello-kitty', 'jigsaw', 'mallard', 'pepe', 'pink-bow-card', 'pink-bow', 'plague-doctor', 'purple-devil',
     'scissorhands', 'sheet-ghost', 'skeleton-suit', 'skeleton', 'sugar-skull', 'vampire-coffin', 'voldemort',
     'wednesday', 'white-duck', 'woodoo', 'zombie'];
-  const files = (await Promise.all(colors.map(async c => {
+  const IDLE = 'assets/telegram/_unique_black/004.tgs'; // default idle duck: black, waving
+  const fallback = () => { stage.innerHTML = '<span class="duck-fallback" aria-hidden="true">🦆</span>'; };
+  if (!window.lottie || !window.DecompressionStream) return fallback();
+
+  // sticker list loads in the background: the idle duck doesn't wait for 19 manifests
+  let files = [];
+  const listReady = Promise.all(colors.map(async c => {
     const p = `assets/telegram/_unique${c && '_' + c}`;
     try { return Object.keys(await (await fetch(`${p}/emoji.json`)).json()).filter(f => f.endsWith('.tgs')).map(f => `${p}/${f}`); }
     catch { return []; }
-  }))).flat();
-  const IDLE = 'assets/telegram/_unique_black/004.tgs'; // default idle duck: black, waving
-  if (files.length) files.push(...special.map(s => `assets/telegram/_unique/special/${s}.tgs`));
-  if (!files.length || !window.lottie) {
-    stage.innerHTML = '<span class="duck-fallback" aria-hidden="true">🦆</span>';
-    return;
-  }
+  })).then(l => {
+    files = l.flat();
+    if (files.length) files.push(...special.map(s => `assets/telegram/_unique/special/${s}.tgs`));
+  });
 
-  // .tgs = gzipped Lottie JSON
-  const load = async url => JSON.parse(await new Response(
-    (await fetch(url)).body.pipeThrough(new DecompressionStream('gzip'))).text());
+  // .tgs = gzipped Lottie JSON. Parsed once per url, kept in a small LRU (idle is re-touched after every click, so it stays)
+  const cache = new Map();
+  const load = url => {
+    let p = cache.get(url);
+    if (p) cache.delete(url);
+    else {
+      p = fetch(url).then(r => new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).json());
+      p.catch(() => cache.delete(url));
+    }
+    cache.set(url, p);
+    if (cache.size > 16) cache.delete(cache.keys().next().value);
+    return p;
+  };
 
-  let anim, cur = null; // cur = sticker on screen now, so a drag peels off the same one
+  let anim, animLoop = true, onScreen = true, cur = null; // cur = sticker on screen now, so a drag peels off the same one
+  // reduced motion: idle loop stays still, but a click (user-initiated) still plays its sticker once
+  const shouldRun = () => onScreen && (!reduced || !animLoop);
   const play = async (url, loop) => {
     const data = await load(url);
     cur = { url, data };
     anim?.destroy();
-    // reduced motion: idle loop stays still, but a click (user-initiated) still plays its sticker once
-    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: !reduced || !loop, animationData: data });
+    animLoop = loop;
+    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: shouldRun(), animationData: data });
     if (!loop) anim.addEventListener('complete', () => play(IDLE, true));
   };
-  await play(IDLE, true);
+  try { await play(IDLE, true); } catch { return fallback(); }
+
+  // off screen: stop the hero animation (and the parallax below) instead of repainting an invisible SVG every frame
+  new IntersectionObserver(([e]) => {
+    onScreen = e.isIntersecting;
+    if (shouldRun()) anim?.play(); else anim?.pause();
+  }).observe(host);
+
+  // pick the next sticker ahead of time and warm it, so a click plays without a download
+  let next = null;
+  const pickNext = () => {
+    if (next || !files.length) return;
+    next = files[Math.floor(Math.random() * files.length)];
+    load(next).catch(() => { next = null; });
+  };
+  host.addEventListener('pointerenter', pickNext);
+  host.addEventListener('focus', pickNext);
 
   let bubbleTimer = 0;
-  const react = () => {
+  const quack = () => {
     bubble.classList.add('show');
     clearTimeout(bubbleTimer);
     bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 1000);
-    play(files[Math.floor(Math.random() * files.length)], false).catch(() => {});
+  };
+  // quack the moment the new sticker is on screen (not on click, which may be before it has downloaded)
+  const react = async () => {
+    await listReady; // an early click waits for the sticker list instead of doing nothing
+    pickNext();
+    const url = next; next = null;
+    if (url) await play(url, false).catch(() => {});
+    quack();
+    pickNext();
   };
   let dragged = false; // a drag ends in a click event; don't also quack
   host.addEventListener('click', () => { if (dragged) dragged = false; else react(); });
@@ -609,7 +610,11 @@ btns.forEach(b=>b.onclick=()=>{
   let fid = 0;
   const E3 = Math.exp(-3), holoW = m => { const t = (255 - m) / 20; return t >= 1 ? 0 : (Math.exp(-3 * t) - E3) / (1 - E3); };
   // same curve as a filter lookup table (index = min(r,g,b), one entry per value 0..255)
-  const HOLO_TABLE = Array.from({ length: 256 }, (_, i) => holoW(i).toFixed(3)).join(' ');
+  const HOLO = Float32Array.from({ length: 256 }, (_, i) => holoW(i));
+  const HOLO_TABLE = Array.from(HOLO, v => v.toFixed(3)).join(' ');
+  // async PNG encode (toDataURL blocks the main thread); blob urls are revoked when the sticker goes
+  const blobUrl = c => new Promise((res, rej) => c.toBlob(b => b ? res(URL.createObjectURL(b)) : rej(), 'image/png'));
+  const unstick = s => { s.remove(); s.urls?.forEach(u => URL.revokeObjectURL(u)); };
   // where the light comes from: mouse cursor, or phone tilt (tilt = {x, y} in -1..1, hue in deg) when there's no mouse
   const light = { mouse: false, tilt: null, hue: 200 };
   // the placed-sticker look (115deg hue -> hue+60 gradient, 85%, light falloff) as an image for the live sticker's filter;
@@ -659,20 +664,20 @@ btns.forEach(b=>b.onclick=()=>{
     a.destroy(); box.remove();
     return new Promise(res => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         try {
           const c = document.createElement('canvas'), px = Math.round(SIZE() * Math.min(2, devicePixelRatio || 1) * 1.15);
           c.width = c.height = px;
-          const x = c.getContext('2d');
+          const x = c.getContext('2d', { willReadFrequently: true });
           x.drawImage(img, 0, 0, px, px);
-          const png = c.toDataURL('image/png');
+          const png = blobUrl(c); // toBlob snapshots the canvas now, before the mask pass below
           // holo mask: only very light pixels. d = 255 - min(r,g,b); full at d=0 (255), exponential falloff to 0 at d=20 (235)
           const im = x.getImageData(0, 0, px, px), q = im.data;
           for (let i = 0; i < q.length; i += 4) {
-            q[i + 3] *= holoW(Math.min(q[i], q[i + 1], q[i + 2]));
+            if (q[i + 3]) q[i + 3] *= HOLO[Math.min(q[i], q[i + 1], q[i + 2])];
           }
           x.putImageData(im, 0, 0);
-          res({ png, mask: c.toDataURL('image/png') });
+          res({ png: await png, mask: await blobUrl(c) });
         } catch { res({ png: url, mask: url }); }
       };
       img.onerror = () => res({ png: url, mask: url });
@@ -687,8 +692,9 @@ btns.forEach(b=>b.onclick=()=>{
     s.innerHTML = `<img alt="" src="${url}"><i class="holo"></i>`;
     s.style.setProperty('--u', `url("${mask}")`);
     s.dataset.r = r;
+    s.urls = [url, mask];
     s.title = 'Drag to move · double-click to peel off';
-    s.ondblclick = () => s.remove();
+    s.ondblclick = () => unstick(s);
     s.onpointerdown = e => { // move a placed sticker
       e.preventDefault(); try { s.setPointerCapture(e.pointerId); } catch {} s.classList.add('lift');
       const dx = parseFloat(s.style.left) - e.pageX, dy = parseFloat(s.style.top) - e.pageY;
@@ -700,7 +706,7 @@ btns.forEach(b=>b.onclick=()=>{
       s.onpointerup = s.onpointercancel = () => { s.onpointermove = null; s.classList.remove('lift'); };
     };
     layer.append(s);
-    while (layer.children.length > MAX) layer.firstChild.remove();
+    while (layer.children.length > MAX) unstick(layer.firstChild);
   };
 
   // drag the hero duck: past 6px it peels off a live, holo-tinted copy that follows the pointer
@@ -722,8 +728,14 @@ btns.forEach(b=>b.onclick=()=>{
     const d = drag;
     d.vx = d.vx * .7 + (e.pageX - d.lx) * .3; d.vy = d.vy * .7 + (e.pageY - d.ly) * .3; d.lx = e.pageX; d.ly = e.pageY;
     const tilt = reduced ? 0 : Math.max(-25, Math.min(25, d.vx * 2));
-    d.live.style.cssText += `;left:${e.pageX}px;top:${e.pageY}px;--t:${tilt}deg`;
+    d.live.style.left = e.pageX + 'px'; d.live.style.top = e.pageY + 'px';
+    d.live.style.setProperty('--t', tilt + 'deg');
     tintLive();
+  };
+  // high-rate mice fire pointermove far above 60Hz: apply only the latest event once per frame
+  const queueDrag = e => {
+    drag.ev = e;
+    drag.raf ||= requestAnimationFrame(() => { if (drag) { drag.raf = 0; moveDrag(drag.ev); } });
   };
   // the cursor sits on the live sticker's center, so its hue follows the drag direction (or the tilt on a phone)
   const tintLive = () => {
@@ -745,13 +757,14 @@ btns.forEach(b=>b.onclick=()=>{
         if (!ready) return end();
         try { host.setPointerCapture(e.pointerId); } catch {}
         startDrag(m);
-      } else moveDrag(m);
+      } else queueDrag(m);
     };
     const end = () => {
       clearTimeout(hold);
       removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', end);
       if (!drag) return;
       const d = drag; drag = null;
+      cancelAnimationFrame(d.raf);
       d.a.destroy(); d.live.remove();
       dragged = true; setTimeout(() => { dragged = false; }, 0);
     };
@@ -770,16 +783,18 @@ btns.forEach(b=>b.onclick=()=>{
     let px = -1e4, py = -1e4, queued = false;
     const flush = () => {
       queued = false;
-      for (const s of layer.children) {
-        if (s.classList.contains('live')) continue;
-        const b = s.getBoundingClientRect(), r = s.dataset.r * Math.PI / 180, h = SIZE() / 2, t = light.tilt;
+      // read every rect first, then write: interleaving forced a style/layout pass per sticker
+      const h = SIZE() / 2, t = light.tilt, vh = innerHeight;
+      const list = [...layer.children].filter(s => !s.classList.contains('live')).map(s => [s, s.getBoundingClientRect()]);
+      for (const [s, b] of list) {
+        if (b.bottom < 0 || b.top > vh) continue; // off screen: nothing to light
         if (t) { // phone: tilt slides the light across every sticker and picks the color
           s.style.setProperty('--mx', (h + t.x * h).toFixed(1) + 'px');
           s.style.setProperty('--my', (h + t.y * h).toFixed(1) + 'px');
           s.style.setProperty('--h', light.hue);
           continue;
         }
-        const dx = px - (b.left + b.width / 2), dy = py - (b.top + b.height / 2);
+        const r = s.dataset.r * Math.PI / 180, dx = px - (b.left + b.width / 2), dy = py - (b.top + b.height / 2);
         s.style.setProperty('--mx', (dx * Math.cos(r) + dy * Math.sin(r) + h).toFixed(1) + 'px');
         s.style.setProperty('--my', (dy * Math.cos(r) - dx * Math.sin(r) + h).toFixed(1) + 'px');
         s.style.setProperty('--h', Math.round(Math.atan2(dy, dx) * 180 / Math.PI));
@@ -808,123 +823,135 @@ btns.forEach(b=>b.onclick=()=>{
     document.documentElement.addEventListener('mouseleave', () => { px = py = -1e4; q(); });
   }
 
-  if (!reduced) addEventListener('pointermove', e => {
-    const x = e.clientX / innerWidth * 2 - 1, y = e.clientY / innerHeight * 2 - 1;
-    stage.style.transform = `translate(${x * 14}px, ${y * 10}px) rotate(${x * 6}deg)`;
-  }, { passive: true });
+  if (!reduced) {
+    let sx = 0, sy = 0, sq = 0;
+    addEventListener('pointermove', e => {
+      sx = e.clientX / innerWidth * 2 - 1; sy = e.clientY / innerHeight * 2 - 1;
+      sq ||= onScreen && requestAnimationFrame(() => {
+        sq = 0;
+        stage.style.transform = `translate(${sx * 14}px, ${sy * 10}px) rotate(${sx * 6}deg)`;
+      });
+    }, { passive: true });
+  }
 })();
 </script>
 
 <script>
 /* featured row demos: one IIFE each */
 
-/* 01 PassportSOL: the app's real "Add Stamps" step + PassportView card (from 0jz/passportsol), fed with demo data.
-   Scoring = Gitcoin base + STAMP_POINTS from src/lib/scoring.ts; "Verified Human" at the Gitcoin threshold (20). */
+/* 04 TGS Viewer (0jz/tgs-viewer): a "folder" of duck .tgs stickers, run the way the app runs them:
+   files decompress 8 at a time (only the JSON text is kept; lottie mutates its input, so each animation parses a fresh copy),
+   and only tiles on screen (+200px) hold a live animation, every one playing like the native build; off-screen ones are destroyed.
+   Click opens the big player (play/pause, frame scrubber, 0.5x/1x/2x); the grid pauses behind it. */
 (() => {
-  const root = document.getElementById('demo-passport');
+  const root = document.getElementById('demo-tgs');
   if (!root) return;
+  const files = ['_unique/001', '_unique_pink/004', '_unique_blue/012', '_unique/special/ghost', '_unique_green/020',
+    '_unique_black/004', '_unique_orange/033', '_unique/special/pepe', '_unique_purple/045', '_unique_red/058',
+    '_unique_cyan/071', '_unique/special/skeleton'].map(f => `assets/telegram/${f}.tgs`);
+  if (!window.lottie || !window.DecompressionStream) {
+    root.innerHTML = '<p style="margin:auto;color:#9a9aa6">This browser can\'t decode .tgs here — grab the app from Releases.</p>';
+    return;
+  }
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const BASE = 14, THRESHOLD = 20, SOL = '9xQeNESKEWt3hPa7cVb2LmK8sRq4ZyD6nF1uJ5gXo';
-  // [card label, description, icon, icon color, earned bg, stamps it earns: [chip label, sub, color, points]]
-  const cards = [
-    ['Solana Wallet', 'Wallet age & activity', 'SOL', '#9945FF', 'rgba(153,69,255,0.12)', [['Solana OG', '2y+ wallet', '#F59E0B', 15], ['Active', '100+ txs', '#00C2FF', 12]]],
-    ['Solana.id', 'On-chain identity profile', 'ID', '#14F195', 'rgba(20,241,149,0.1)', [['Solana.id', 'neske', '#14F195', 4]]],
-    ['.sol Domain', 'Solana Name Service', 'SOL', '#9945FF', 'rgba(153,69,255,0.15)', [['.sol', 'neske.sol', '#9945FF', 5]]],
-    ['GitHub', 'Verified developer account', 'GH', '#e2e8f0', '#1a1e24', [['GitHub', '0jz', '#e2e8f0', 5]]],
-  ];
+  const readText = url => fetch(url).then(r => new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text());
+  const name = u => u.slice(16, -4).replace(/^_unique_?\/?/, ''); // assets/telegram/_unique_pink/004.tgs -> pink/004
+
   root.innerHTML = `
-    <div class="ps">
-      <div class="ps-step">
-        <div class="ps-head"><span class="ps-num">3</span><h4 class="ps-h3">Add Stamps</h4><span class="ps-pill ps-count">optional</span></div>
-        <p class="ps-cap">Auto-detected</p><div class="ps-auto"></div>
-        <p class="ps-cap">Event badges</p><button type="button" class="ps-qr">[QR] Scan event QR</button>
-        <p class="ps-cap">Developer badges</p><div class="ps-dev"></div>
-        <button type="button" class="ps-go">Mint Passport →</button>
-      </div>
-      <div class="ps-pp" aria-live="polite">
-        <div class="ps-top">
-          <div class="ps-brand"><p style="color:#9945FF">Solana</p><p style="color:#14F195">Passport</p><p class="ps-mut ps-date"></p></div>
-          <div class="ps-score"><b class="ps-big">${BASE.toFixed(1)}</b><p class="ps-human"></p><p class="ps-split"></p></div>
-        </div>
-        <div><div class="ps-addr"><span>SOL</span><span>${SOL}</span></div></div>
-        <div><div class="ps-coll"><span>Badge collection</span><span class="ps-pill on ps-n">0 badges</span></div>
-          <div class="ps-chips"><span class="ps-empty">No badges collected yet — tap a stamp</span></div></div>
-        <div><div class="ps-mut ps-tx">Not minted yet</div></div>
+    <div class="dm-top"><span>~/stickers · ${files.length} files</span><span>click to open</span></div>
+    <div class="tg-grid"></div>
+    <div class="tg-player" hidden role="dialog" aria-label="Sticker player">
+      <div class="dm-top"><span class="tg-name"></span><span class="tg-frame"></span></div>
+      <div class="tg-stage"><div></div></div>
+      <div class="dm-foot">
+        <button type="button" class="dm-btn tg-play">Pause</button>
+        <input type="range" class="tg-range" min="0" value="0" step="1" aria-label="Frame">
+        <span class="tg-speeds">${[0.5, 1, 2].map(s => `<button type="button" class="dm-btn" data-s="${s}" aria-pressed="${s === 1}">${s}x</button>`).join(' ')}</span>
+        <button type="button" class="dm-btn tg-close">Close</button>
       </div>
     </div>`;
   const $ = s => root.querySelector(s);
-  const chips = $('.ps-chips'), big = $('.ps-big'), tx = $('.ps-tx');
-  const earned = []; // [label, sub, color, points, seal?]
-  let shown = BASE, raf = 0, minted = false;
-  const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  const rand58 = n => Array.from({ length: n }, () => B58[Math.random() * B58.length | 0]).join('');
-  const plural = n => `${n} badge${n === 1 ? '' : 's'}`;
+  const grid = $('.tg-grid'), player = $('.tg-player'), stage = $('.tg-stage>div'), range = $('.tg-range');
+  const playBtn = $('.tg-play'), frameEl = $('.tg-frame');
 
-  const animate = to => {
-    cancelAnimationFrame(raf);
-    const from = shown, t0 = performance.now();
-    const step = now => {
-      const k = reduced ? 1 : Math.min(1, (now - t0) / 400);
-      shown = from + (to - from) * k; big.textContent = shown.toFixed(1);
-      if (k < 1) raf = requestAnimationFrame(step);
-    };
-    step(t0);
-  };
-  const render = () => {
-    const bonus = earned.reduce((s, e) => s + e[3], 0), score = BASE + bonus, human = score >= THRESHOLD;
-    animate(score);
-    $('.ps-human').textContent = human ? 'Verified Human' : `< ${THRESHOLD} threshold`;
-    $('.ps-human').style.color = human ? '#14F195' : '#71717a';
-    $('.ps-split').textContent = bonus ? `${BASE.toFixed(1)} Gitcoin + ${bonus} pts` : '';
-    $('.ps-n').textContent = plural(earned.length);
-    const c = $('.ps-count');
-    c.textContent = earned.length ? plural(earned.length) : 'optional';
-    c.classList.toggle('on', earned.length > 0);
-    if (minted) { minted = false; tx.className = 'ps-mut ps-tx'; tx.textContent = 'Changed — mint again'; $('.ps-date').textContent = ''; }
-  };
-  const earn = list => {
-    chips.querySelector('.ps-empty')?.remove();
-    for (const e of list) {
-      earned.push(e);
-      const el = document.createElement('div');
-      if (e[4]) { el.className = 'ps-seal'; el.textContent = e[0]; }
-      else {
-        el.className = 'ps-chip';
-        el.style.cssText = `background:${e[2]}18;border-color:${e[2]}40`;
-        el.innerHTML = `<i style="background:${e[2]}"></i><div><b style="color:${e[2]}">${e[0]}</b><small>${e[1]}</small></div><em style="color:${e[2]}cc">+${e[3]}</em>`;
-      }
-      chips.append(el);
-    }
-    render();
-  };
-
-  cards.forEach(([label, desc, ic, color, bg, gives], i) => {
-    const dev = label === 'GitHub';
+  const tiles = files.map(url => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'ps-card';
-    b.innerHTML = `<span class="ps-ic" style="color:${color}">${ic}</span><span class="ps-t"><b>${label}</b><small>${desc}</small></span><span class="ps-st${dev ? ' btn' : ''}">${dev ? 'Connect' : 'Check'}</span>`;
-    const st = b.querySelector('.ps-st');
-    b.onclick = () => {
-      if (b.classList.contains('on') || st.classList.contains('wait')) return;
-      st.className = 'ps-st wait'; st.textContent = dev ? 'Waiting...' : 'Checking...';
-      setTimeout(() => {
-        b.classList.add('on'); b.style.background = bg; b.style.borderColor = color + '33';
-        b.setAttribute('aria-disabled', 'true');
-        st.className = 'ps-st'; st.style.color = dev ? '#14F195' : color;
-        st.textContent = dev ? 'v Earned' : 'v ' + gives.map(g => g[1]).join(', ');
-        earn(gives);
-      }, reduced ? 0 : 500 + i * 120);
-    };
-    $(dev ? '.ps-dev' : '.ps-auto').append(b);
+    b.type = 'button'; b.className = 'tg-tile'; b.setAttribute('aria-label', `Open ${name(url)}`);
+    b.innerHTML = `<div></div><span>${name(url)}</span>`;
+    grid.append(b);
+    const t = { url, b, anim: null, json: null, seen: false };
+    if (reduced) { // reduced motion: tiles stay on frame 1 and play only while hovered/focused
+      const start = () => t.anim?.play(), stop = () => t.anim?.goToAndStop(0, true);
+      b.addEventListener('pointerenter', start); b.addEventListener('focus', start);
+      b.addEventListener('pointerleave', stop); b.addEventListener('blur', stop);
+    }
+    b.onclick = () => t.json && open(t);
+    return t;
   });
-  $('.ps-qr').onclick = e => { e.currentTarget.disabled = true; earn([['Solana Breakpoint 2025', 'Verified', '#00C2FF', 8, true]]); };
-  $('.ps-go').onclick = () => {
-    minted = true;
-    $('.ps-date').textContent = new Date().toLocaleDateString();
-    tx.className = 'ps-tx';
-    tx.textContent = `${rand58(6)}...${rand58(4)} - memo tx (demo)`;
+
+  const mount = t => {
+    if (t.anim || !t.json || !t.seen) return;
+    t.anim = lottie.loadAnimation({ container: t.b.firstChild, renderer: 'svg', loop: true,
+      autoplay: !reduced && player.hidden, animationData: JSON.parse(t.json) });
   };
-  render();
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    const t = tiles.find(t => t.b === e.target);
+    t.seen = e.isIntersecting;
+    if (t.seen) mount(t);
+    else if (t.anim) { t.anim.destroy(); t.anim = null; }
+  }), { rootMargin: '200px' });
+
+  // decompress 8 at a time, starting the first time the demo comes near the screen
+  const decode = async () => {
+    let i = 0;
+    const worker = async () => {
+      while (i < tiles.length) {
+        const t = tiles[i++];
+        try { t.json = await readText(t.url); mount(t); }
+        catch { t.b.disabled = true; t.b.lastChild.textContent = 'broken file'; }
+      }
+    };
+    await Promise.all(Array.from({ length: 8 }, worker));
+  };
+  const kick = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting) return;
+    kick.disconnect();
+    tiles.forEach(t => io.observe(t.b));
+    decode();
+  }, { rootMargin: '200px' });
+  kick.observe(root);
+  const gridPlay = on => tiles.forEach(t => t.anim && (on && !reduced ? t.anim.play() : t.anim.pause()));
+
+  let big = null, from = null;
+  const setPlaying = on => { on ? big.play() : big.pause(); playBtn.textContent = on ? 'Pause' : 'Play'; };
+  const open = t => {
+    from = t.b;
+    big?.destroy();
+    gridPlay(false);
+    big = lottie.loadAnimation({ container: stage, renderer: 'svg', loop: true, autoplay: false, animationData: JSON.parse(t.json) });
+    range.max = Math.max(0, Math.floor(big.totalFrames) - 1); range.value = 0;
+    big.setSpeed(+$('.tg-speeds [aria-pressed=true]').dataset.s);
+    big.addEventListener('enterFrame', () => {
+      const f = Math.floor(big.currentFrame);
+      range.value = f; frameEl.textContent = `${f + 1} / ${range.max * 1 + 1}`;
+    });
+    $('.tg-name').textContent = name(t.url);
+    frameEl.textContent = `1 / ${range.max * 1 + 1}`;
+    player.hidden = false;
+    setPlaying(!reduced);
+    playBtn.focus();
+  };
+  const close = () => { player.hidden = true; big?.destroy(); big = null; gridPlay(true); from?.focus(); };
+  playBtn.onclick = () => setPlaying(big.isPaused);
+  range.oninput = () => { setPlaying(false); big.goToAndStop(+range.value, true); frameEl.textContent = `${+range.value + 1} / ${range.max * 1 + 1}`; };
+  $('.tg-speeds').onclick = e => {
+    const s = e.target.dataset?.s; if (!s) return;
+    root.querySelectorAll('.tg-speeds button').forEach(b => b.setAttribute('aria-pressed', b === e.target));
+    big?.setSpeed(+s);
+  };
+  $('.tg-close').onclick = close;
+  // keep keys (arrows on the scrubber) away from the slider's prev/next handler
+  player.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Escape') close(); });
 })();
 
 /* 02 ULTRAKILL: Pixel Arsenal armory */

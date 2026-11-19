@@ -123,6 +123,11 @@ a{color:inherit}
 /* row demos (always dark, like the hero) */
 .demo{position:relative;min-height:260px;border-radius:12px;background:#0b0b0f;overflow:hidden;color:#f4f2ee;min-width:0;font-size:14px}
 .demo:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
+/* phones / slow connections: still of the demo until tapped */
+.demo-poster{position:absolute;inset:0;z-index:5;border:0;padding:0;margin:0;background:#0b0b0f;cursor:pointer;display:grid;place-items:center}
+.demo-poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.demo-poster span{position:relative;padding:8px 14px;border-radius:999px;background:rgba(11,11,15,.82);color:#b4ff5a;font:600 13px ui-monospace,Consolas,monospace;border:1px solid rgba(180,255,90,.45)}
+.demo-poster:focus-visible{outline:2px solid #b4ff5a;outline-offset:-2px}
 .dm-btn{font:12.5px ui-monospace,Consolas,monospace;padding:6px 10px;border-radius:8px;border:1px solid #2a2a33;background:#15151b;color:#f4f2ee;cursor:pointer}
 .dm-btn[aria-pressed=true]{border-color:#b4ff5a;color:#b4ff5a}
 .dm-btn:focus-visible,.dm-slot:focus-visible{outline:2px solid #b4ff5a;outline-offset:2px}
@@ -356,7 +361,7 @@ footer{margin:80px 0 40px;padding-top:20px;border-top:1px solid var(--line);colo
         <div class="tags"><span>Solidity</span><span>Foundry</span><span>Node</span><span>ethers</span></div>
         <div class="actions"><a href="https://monadrift.vercel.app">Play live ↗</a><a href="https://github.com/0jz/Monadrift">Code</a></div>
       </div>
-      <div class="demo" id="demo-monad"><iframe src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible." loading="lazy"></iframe></div>
+      <div class="demo" id="demo-monad"><iframe data-src="demos/monadrift/demo.html" title="Monadrift time trial: drive a seeded track with the arrow keys or WASD. Only the next few sections are visible."></iframe></div>
     </article>
     <article class="feat-pane card" id="feat-slide-4" data-c="tools" data-tone="tgs" role="tabpanel" hidden aria-labelledby="feat-tab-3">
       <div class="feat-text">
@@ -833,6 +838,22 @@ addEventListener('DOMContentLoaded', () => new Promise(r => (window.requestIdleC
 <script>
 /* featured row demos: one IIFE each */
 
+// Desktop: all four demos start loading together right after the page's own load (first paint never waits on them),
+// so every slide is ready by the time it's opened.
+// Phones, Data Saver and slow connections (~7 MB and seconds of CPU otherwise): a still of the demo, tap to load the real one.
+const onPageLoad = f => document.readyState === 'complete' ? f() : addEventListener('load', () => f(), { once: true });
+const net = navigator.connection; // Chromium only; elsewhere only the phone test applies
+const LITE = matchMedia('(pointer: coarse), (max-width: 760px)').matches || !!net?.saveData || /2g|3g/.test(net?.effectiveType || '');
+const startDemo = (id, run) => {
+  if (!LITE) return onPageLoad(run);
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'demo-poster'; b.setAttribute('aria-label', 'Load the live demo');
+  b.innerHTML = `<img src="assets/posters/${id}.webp" alt="" loading="lazy" decoding="async"><span>▶ Tap to play</span>`;
+  b.onclick = () => { b.remove(); run(); };
+  document.getElementById(id).append(b);
+};
+startDemo('demo-monad', () => { const f = document.querySelector('#demo-monad iframe'); f.src = f.dataset.src; });
+
 /* 04 TGS Viewer (0jz/tgs-viewer): a "folder" of duck .tgs stickers, run the way the app runs them:
    files decompress 8 at a time (only the JSON text is kept; lottie mutates its input, so each animation parses a fresh copy),
    and only tiles on screen (+200px) hold a live animation, every one playing like the native build; off-screen ones are destroyed.
@@ -928,13 +949,8 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     };
     await Promise.all(Array.from({ length: 8 }, worker));
   };
-  const kick = new IntersectionObserver(([e]) => {
-    if (!e.isIntersecting) return;
-    kick.disconnect();
-    tiles.forEach(t => io.observe(t.b));
-    decode();
-  }, { rootMargin: '200px' });
-  kick.observe(root);
+  tiles.forEach(t => io.observe(t.b));
+  startDemo('demo-tgs', decode);
   const gridPlay = on => { if (on) run(); else { cancelAnimationFrame(raf); raf = 0; } };
 
   let big = null, from = null;
@@ -1906,9 +1922,7 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
   };
 
   rangeBtn.disabled = true; label.textContent = 'loading guns…';
-  // three.js + guns + sandbox (~1 MB, ~2 s CPU on phones) load only once the demo nears the screen
-  const near = new IntersectionObserver(([e]) => { if (e.isIntersecting) { near.disconnect(); boot(); } }, { rootMargin: '300px' });
-  near.observe(root);
+  startDemo('demo-arsenal', () => boot());
   const boot = () => fetch('assets/arsenal/manifest.json', { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('no manifest'); return r.json(); })
     .then(startReal)
@@ -1926,7 +1940,7 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     });
 })();
 
-/* 04 Icy Tower: boot the real wasm game the first time its slide opens (muted, straight into gameplay);
+/* 04 Icy Tower: boot the real wasm game with the other demos (startDemo: page load on desktop, tap on phones; muted, straight into gameplay);
    fall back to the JS port (like Pixel Arsenal) */
 (() => {
   const root = document.getElementById('demo-icy');
@@ -2001,16 +2015,8 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     .then(r => { if (!r.ok) throw new Error('no assets'); bootWasm(); })
     .catch(fallback);
 
-  // don't download the game (wasm + music, ~3 MB) on page load; boot it the first time its slide is opened
-  if (!root.closest('.feat-pane.is-on')) {
-    root.innerHTML = `<div class="dm-icy-stage" style="display:grid;place-items:center;color:#f4f7fb;font:12px 'VCR OSD Mono',ui-monospace,Consolas,monospace">Loading Icy Tower…</div>`;
-    const onOpen = e => {
-      if (e.detail?.tone !== 'icy') return;
-      removeEventListener('feat-change', onOpen);
-      start();
-    };
-    addEventListener('feat-change', onOpen);
-  } else start();
+  root.innerHTML = `<div class="dm-icy-stage" style="display:grid;place-items:center;color:#f4f7fb;font:12px 'VCR OSD Mono',ui-monospace,Consolas,monospace">Loading Icy Tower…</div>`;
+  startDemo('demo-icy', start);
 })();
 
 /* featured project switcher */

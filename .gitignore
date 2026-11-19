@@ -13,3 +13,5 @@ assets/telegram/_unique*/_preview/
 assets/telegram/_unique*/audit.txt
 assets/temp telegram/
 tgs-viewer.html
+# arsenal export tooling, screenshots and raw extracts: local only, not the site
+assets/arsenal/_*

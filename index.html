@@ -853,17 +853,28 @@ addEventListener('DOMContentLoaded', () => new Promise(r => (window.requestIdleC
 <script>
 /* featured row demos: one IIFE each */
 
-// Desktop: all four demos start loading together right after the page's own load (first paint never waits on them),
-// so every slide is ready by the time it's opened.
+// Desktop: all four demos start loading right after the page's own load (first paint never waits on them), so every
+// slide is ready by the time it's opened. They start one after another as the main thread frees up (the slide on
+// screen first) instead of all in the same instant, which stacked three.js, the wasm game and sticker decoding.
 // Phones, Data Saver and slow connections (~7 MB and seconds of CPU otherwise): a still of the demo, tap to load the real one.
 const onPageLoad = f => document.readyState === 'complete' ? f() : addEventListener('load', () => f(), { once: true });
 const net = navigator.connection; // Chromium only; elsewhere only the phone test applies
 const LITE = matchMedia('(pointer: coarse), (max-width: 760px)').matches || !!net?.saveData || /2g|3g/.test(net?.effectiveType || '');
+const demoQueue = [];
+const nextDemo = () => {
+  demoQueue.shift()?.run();
+  if (demoQueue.length) (window.requestIdleCallback || setTimeout)(nextDemo, { timeout: 800 });
+};
+onPageLoad(() => {
+  const shown = d => document.getElementById(d.id).closest('.feat-pane.is-on') ? 0 : 1;
+  demoQueue.sort((a, b) => shown(a) - shown(b));
+  nextDemo();
+});
 const startDemo = (id, run) => {
-  if (!LITE) return onPageLoad(run);
+  if (!LITE) return void demoQueue.push({ id, run });
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'demo-poster'; b.setAttribute('aria-label', 'Load the live demo');
-  b.innerHTML = `<img src="assets/posters/${id}.webp" alt="" loading="lazy" decoding="async"><span>▶ Tap to play</span>`;
+  b.innerHTML = `<img src="assets/posters/${id}.webp" srcset="assets/posters/${id}-640.webp 640w, assets/posters/${id}.webp 928w" sizes="(max-width: 760px) calc(100vw - 80px), 928px" alt="" loading="lazy" decoding="async"><span>▶ Tap to play</span>`;
   b.onclick = () => { b.remove(); run(); };
   document.getElementById(id).append(b);
 };
@@ -1180,7 +1191,7 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     }
     rangeBtn.disabled = true;
     try {
-      T3 ||= await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+      T3 ||= await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js');
       range = makeRange(T3); range.setGun(cur);
       rangeBtn.setAttribute('aria-pressed', 'true'); hits.textContent = 'hits 0';
       label.textContent = 'click to fire · pick a gun'; label.style.color = '';
@@ -1220,7 +1231,7 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     { name: 'Epic', color: '#ffe01a' }, { name: 'Legendary', color: '#ff2020' }, { name: 'Mythical', color: '#b34dff' }
   ];
   const startReal = async man => {
-    const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+    const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js');
     const base = 'assets/arsenal/';
     // textures ship as lossless .webp next to the exported .png (re-run the conversion after re-exporting)
     const loadTex = (url, pixel) => new Promise(ok => {

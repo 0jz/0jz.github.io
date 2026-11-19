@@ -20,11 +20,6 @@ ws.onmessage = ev => {
 await new Promise(r => { ws.onopen = r; });
 await send('Runtime.enable');
 const ev = expr => send('Runtime.evaluate', { expression: expr, returnByValue: true }).then(r => r.result.value);
-await send('Runtime.evaluate', { expression: "document.querySelectorAll('#feat-tabs .feat-tab')[1].click()" });
-await new Promise(r => setTimeout(r, 300));
-await send('Runtime.evaluate', { expression: "document.querySelector('#demo-passport .dm-slot, #demo-passport button.dm-stamp, #demo-passport .dm-stamps button')?.click()" });
-const pass = await ev(`document.querySelector('#demo-passport .dm-big')?.textContent + ' | ' + document.querySelector('#demo-passport .dm-status')?.textContent`);
-console.log('passport', pass);
 await send('Runtime.evaluate', { expression: "document.querySelectorAll('#feat-tabs .feat-tab')[3].click()" });
 await new Promise(r => setTimeout(r, 300));
 await send('Runtime.evaluate', { expression: "document.querySelector('#demo-ss3 .dm-roll').click()" });

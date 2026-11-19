@@ -78,13 +78,41 @@ $("restart").onclick = reset;
 $("random").onclick = randomSeed;
 $("seed").onchange = () => { best = null; reset(); };
 
+// Touch sticks: the sim takes digital inputs (steer -1|0|1, throttle, brake), so a stick past its dead zone
+// counts as the matching key held. Replays and verification stay exactly as with the keyboard.
+const pad = { steer: 0, throttle: 0, brake: 0 };
+for (const el of document.querySelectorAll(".stick")) {
+  const knob = el.querySelector("span"), steerAxis = el.dataset.axis === "steer";
+  let id = null;
+  const move = (e) => {
+    const r = el.getBoundingClientRect(), R = r.width / 2;
+    let dx = e.clientX - r.left - R, dy = e.clientY - r.top - R;
+    if (steerAxis) dy = 0; else dx = 0; // each stick moves on its own axis only
+    const len = Math.hypot(dx, dy), k = len > R * 0.6 ? (R * 0.6) / len : 1;
+    knob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+    const dz = R * 0.22;
+    if (steerAxis) pad.steer = dx > dz ? 1 : dx < -dz ? -1 : 0;
+    else { pad.throttle = dy < -dz ? 1 : 0; pad.brake = dy > dz ? 1 : 0; }
+  };
+  const release = (e) => {
+    if (e.pointerId !== id) return;
+    id = null; knob.style.transform = "";
+    if (steerAxis) pad.steer = 0; else pad.throttle = pad.brake = 0;
+  };
+  el.addEventListener("pointerdown", (e) => { if (id !== null) return; e.preventDefault(); id = e.pointerId; try { el.setPointerCapture(id); } catch {} move(e); });
+  el.addEventListener("pointermove", (e) => { if (e.pointerId === id) move(e); });
+  el.addEventListener("pointerup", release);
+  el.addEventListener("pointercancel", release);
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+}
+
 function readInput() {
-  const left = keys.has("arrowleft") || keys.has("a");
-  const right = keys.has("arrowright") || keys.has("d");
+  const left = keys.has("arrowleft") || keys.has("a") || pad.steer < 0;
+  const right = keys.has("arrowright") || keys.has("d") || pad.steer > 0;
   return {
     steer: (right ? 1 : 0) - (left ? 1 : 0),
-    throttle: keys.has("arrowup") || keys.has("w") ? 1 : 0,
-    brake: keys.has("arrowdown") || keys.has("s") ? 1 : 0,
+    throttle: keys.has("arrowup") || keys.has("w") || pad.throttle ? 1 : 0,
+    brake: keys.has("arrowdown") || keys.has("s") || pad.brake ? 1 : 0,
   };
 }
 

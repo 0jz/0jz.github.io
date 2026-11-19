@@ -44,7 +44,7 @@ const measure = async (name) => {
   fs.writeFileSync(dir + 'feat-' + name + '.png', Buffer.from(shot.data, 'base64'));
 };
 await measure('arsenal');
-for (const [i, name] of [['1','passport'],['2','monad'],['3','ss3']]) {
+for (const [i, name] of [['1','icy'],['2','monad'],['3','tgs']]) {
   await send('Runtime.evaluate', { expression: `document.querySelectorAll('#feat-tabs .feat-tab')[${i}].click()` });
   await new Promise(r => setTimeout(r, 700));
   await measure(name);

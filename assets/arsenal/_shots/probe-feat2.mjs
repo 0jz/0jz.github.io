@@ -36,18 +36,11 @@ for (const i of [1, 2, 3]) {
   await new Promise(r => setTimeout(r, 500));
   console.log('desk', i, await sizes());
 }
-const stamp = await ev(`(() => {
-  const b = document.querySelector('#demo-passport .dm-stamps button');
-  if (!b) return 'no button';
-  b.click();
-  return b.textContent + ' pressed ' + b.getAttribute('aria-pressed') + ' score ' + document.querySelector('#demo-passport .dm-big').textContent;
-})()`);
-console.log('stamp', stamp);
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await send('Runtime.evaluate', { expression: `document.querySelectorAll('#feat-tabs .feat-tab')[0].click()` });
 await new Promise(r => setTimeout(r, 900));
 console.log('mob arsenal', await sizes());
 await send('Runtime.evaluate', { expression: `document.querySelectorAll('#feat-tabs .feat-tab')[1].click()` });
 await new Promise(r => setTimeout(r, 500));
-console.log('mob passport', await sizes());
+console.log('mob icy', await sizes());
 ws.close();

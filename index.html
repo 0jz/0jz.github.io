@@ -183,6 +183,12 @@ a{color:inherit}
 #demo-arsenal{aspect-ratio:640/480;min-height:0;overflow:hidden}
 #demo-arsenal .dm-ark{flex:1;min-height:0}
 #demo-arsenal .dm-stage,#demo-arsenal .dm-foot{flex-shrink:0}
+/* phones: a 4:3 box is too short for range + gun picker, so size to content with a fixed-height picker */
+@media (max-width:760px){
+  #demo-arsenal{aspect-ratio:auto}
+  #demo-arsenal .dm-ark.real .dm-stage.ranged,#demo-arsenal .dm-ark.real .dm-stage.yard-on{height:min(62vw,300px)}
+  #demo-arsenal .dm-ark.real .dm-armory{flex:none;grid-template-rows:repeat(2,64px)}
+}
 .dm-slot{position:relative}
 .dm-rare{position:absolute;left:4px;top:4px;font:9px ui-monospace,Consolas,monospace;padding:2px 5px;border-radius:4px;background:rgba(0,0,0,.72);color:#fff;line-height:1;pointer-events:none;text-transform:uppercase;letter-spacing:.04em}
 .dm-slot[aria-pressed=true]{box-shadow:0 0 0 1px #b4ff5a}
@@ -200,6 +206,7 @@ a{color:inherit}
 
 /* 03 monadrift: time-trial sim, embedded from the Monadrift repo's sim/ (copy of 33dba3c) */
 #demo-monad{min-height:520px}
+@media (max-width:760px){#demo-monad{min-height:620px}} /* phones: header wraps, so give the track room for the touch sticks */
 #demo-monad iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
 
 /* 04 icy tower */
@@ -211,7 +218,9 @@ a{color:inherit}
 #demo-icy .dm-icy-hint[hidden]{display:none}
 #demo-icy .dm-icy-pad{display:none;justify-content:center;gap:8px;padding:8px;background:#121418}
 #demo-icy .dm-icy-pad[hidden]{display:none!important}
-#demo-icy .dm-icy-pad .dm-btn{min-width:72px;min-height:44px;font-family:'VCR OSD Mono',ui-monospace,Consolas,monospace}
+#demo-icy .dm-icy-pad .dm-btn{min-width:72px;min-height:52px;font-family:'VCR OSD Mono',ui-monospace,Consolas,monospace;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#demo-icy .dm-icy-pad .dm-btn:last-child{margin-left:auto;min-width:96px}
+#demo-icy .dm-icy-pad{justify-content:flex-start}
 @media (pointer:coarse),(max-width:760px){
   #demo-icy .dm-icy-pad{display:flex}
   #demo-icy .dm-icy-hint{display:none}
@@ -842,6 +851,7 @@ btns.forEach(b=>b.onclick=()=>{
 /* 04 TGS Viewer (0jz/tgs-viewer): a "folder" of duck .tgs stickers, run the way the app runs them:
    files decompress 8 at a time (only the JSON text is kept; lottie mutates its input, so each animation parses a fresh copy),
    and only tiles on screen (+200px) hold a live animation, every one playing like the native build; off-screen ones are destroyed.
+   Tiles redraw at most 60/s (30/s on phones, staggered) whatever the screen's refresh rate.
    Click opens the big player (play/pause, frame scrubber, 0.5x/1x/2x); the grid pauses behind it. */
 (() => {
   const root = document.getElementById('demo-tgs');
@@ -891,14 +901,34 @@ btns.forEach(b=>b.onclick=()=>{
 
   const mount = t => {
     if (t.anim || !t.json || !t.seen) return;
-    t.anim = lottie.loadAnimation({ container: t.b.firstChild, renderer: 'svg', loop: true,
-      autoplay: !reduced && player.hidden, animationData: JSON.parse(t.json) });
+    t.anim = lottie.loadAnimation({ container: t.b.firstChild, renderer: 'svg', loop: true, autoplay: false, animationData: JSON.parse(t.json) });
+    run();
   };
+  // One shared loop drives every live tile from the clock (like the native build) instead of a lottie timer per tile.
+  // A tile redraws only when its time slot changes: 60/s on desktop, 30/s on phones, whatever the screen's refresh rate
+  // (120/144 Hz screens would otherwise redraw every SVG 2x as often as needed). On phones half the tiles sit half a slot
+  // later, so each screen frame redraws about half of them.
+  const PHONE = matchMedia('(pointer: coarse)').matches, STEP = PHONE ? 1 / 30 : 1 / 60, t0 = performance.now();
+  let raf = 0;
+  const loop = now => {
+    raf = 0;
+    const live = tiles.filter(t => t.anim);
+    if (!live.length || !player.hidden) return; // nothing on screen, or the big player covers the grid
+    const sec = (now - t0) / 1000;
+    live.forEach((t, i) => {
+      const k = Math.floor((sec + (PHONE && i % 2 ? STEP / 2 : 0)) / STEP);
+      if (k === t.k) return;
+      t.k = k;
+      t.anim.goToAndStop(k * STEP * t.anim.frameRate % t.anim.totalFrames, true);
+    });
+    raf = requestAnimationFrame(loop);
+  };
+  const run = () => { if (!raf && !reduced) raf = requestAnimationFrame(loop); };
   const io = new IntersectionObserver(es => es.forEach(e => {
     const t = tiles.find(t => t.b === e.target);
     t.seen = e.isIntersecting;
     if (t.seen) mount(t);
-    else if (t.anim) { t.anim.destroy(); t.anim = null; }
+    else if (t.anim) { t.anim.destroy(); t.anim = null; t.k = null; }
   }), { rootMargin: '200px' });
 
   // decompress 8 at a time, starting the first time the demo comes near the screen
@@ -920,7 +950,7 @@ btns.forEach(b=>b.onclick=()=>{
     decode();
   }, { rootMargin: '200px' });
   kick.observe(root);
-  const gridPlay = on => tiles.forEach(t => t.anim && (on && !reduced ? t.anim.play() : t.anim.pause()));
+  const gridPlay = on => { if (on) run(); else { cancelAnimationFrame(raf); raf = 0; } };
 
   let big = null, from = null;
   const setPlaying = on => { on ? big.play() : big.pause(); playBtn.textContent = on ? 'Pause' : 'Play'; };
@@ -1634,7 +1664,9 @@ btns.forEach(b=>b.onclick=()=>{
     const outdoorCam = () => {
       if (!sandbox) return false;
       const eye = sandbox.camera, look = sandbox.look;
-      cam.fov = 73;
+      // keep the horizontal view of a 16:9 frame at 73° vertical, so narrow (phone) frames still show all three dummies
+      const halfW = Math.tan(T.MathUtils.degToRad(73 / 2)) * 16 / 9;
+      cam.fov = Math.min(100, Math.max(73, T.MathUtils.radToDeg(2 * Math.atan(halfW / Math.max(0.5, cam.aspect)))));
       cam.position.set(eye[0], eye[1], eye[2]);
       cam.up.set(0, 1, 0);
       cam.lookAt(look[0], eye[1], look[2]);
@@ -1777,6 +1809,7 @@ btns.forEach(b=>b.onclick=()=>{
       const w = stage.clientWidth, h = stage.clientHeight || 210;
       renderer.setSize(w, h, false); cam.aspect = w / Math.max(1, h); cam.updateProjectionMatrix();
       gunR.setSize(w, h, false); gunCam.aspect = w / Math.max(1, h); gunCam.updateProjectionMatrix();
+      if (sandbox) outdoorCam(); // field of view depends on the frame's shape
     };
     new ResizeObserver(size).observe(stage);
     new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(view);
@@ -1870,7 +1903,8 @@ btns.forEach(b=>b.onclick=()=>{
     });
 })();
 
-/* 04 Icy Tower: boot the real wasm game at page load (muted, straight into gameplay); fall back to the JS port (like Pixel Arsenal) */
+/* 04 Icy Tower: boot the real wasm game at page load (muted, straight into gameplay; on phones only once its slide opens);
+   fall back to the JS port (like Pixel Arsenal) */
 (() => {
   const root = document.getElementById('demo-icy');
   const splash = document.getElementById('boot');
@@ -1897,7 +1931,35 @@ btns.forEach(b=>b.onclick=()=>{
     root.innerHTML = `
       <div class="dm-icy-stage">
         <canvas id="glcanvas" tabindex="1"></canvas>
+      </div>
+      <div class="dm-icy-pad">
+        <button type="button" class="dm-btn" data-k="KeyA" aria-label="Move left">◀</button>
+        <button type="button" class="dm-btn" data-k="KeyD" aria-label="Move right">▶</button>
+        <button type="button" class="dm-btn" data-k="KeyW" aria-label="Jump">Jump</button>
       </div>`;
+
+    // touch pad (shown on phones by CSS): the wasm game reads canvas key events, so each held button sends its key.
+    // Pointer capture keeps a press alive while the thumb slides; several thumbs can hold several keys (move + jump).
+    const cv = root.querySelector('#glcanvas');
+    const key = (type, code) => cv.dispatchEvent(new KeyboardEvent(type, { code, key: code.slice(3).toLowerCase(), bubbles: true }));
+    root.querySelectorAll('.dm-icy-pad button').forEach(b => {
+      const held = new Set();
+      b.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        b.setPointerCapture(e.pointerId);
+        if (!held.size) key('keydown', b.dataset.k);
+        held.add(e.pointerId);
+        b.setAttribute('aria-pressed', 'true');
+      });
+      const up = e => {
+        if (!held.delete(e.pointerId) || held.size) return;
+        key('keyup', b.dataset.k);
+        b.setAttribute('aria-pressed', 'false');
+      };
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointercancel', up);
+      b.addEventListener('contextmenu', e => e.preventDefault());
+    });
 
     const loadScript = src => new Promise((res, rej) => {
       const s = document.createElement('script');
@@ -1922,9 +1984,22 @@ btns.forEach(b=>b.onclick=()=>{
     reveal();
   };
 
-  fetch('assets/icy/assets/data/FLOOR01.png', { cache: 'no-store' })
+  const start = () => fetch('assets/icy/assets/data/FLOOR01.png', { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('no assets'); bootWasm(); })
     .catch(fallback);
+
+  // Phones (same test as the touch pad CSS): don't download the game (wasm + music, ~2 MB) or hold the splash for it
+  // on page load; boot it the first time its slide is opened.
+  if (matchMedia('(pointer: coarse), (max-width: 760px)').matches && !root.closest('.feat-pane.is-on')) {
+    reveal();
+    root.innerHTML = `<div class="dm-icy-stage" style="display:grid;place-items:center;color:#f4f7fb;font:12px 'VCR OSD Mono',ui-monospace,Consolas,monospace">Loading Icy Tower…</div>`;
+    const onOpen = e => {
+      if (e.detail?.tone !== 'icy') return;
+      removeEventListener('feat-change', onOpen);
+      start();
+    };
+    addEventListener('feat-change', onOpen);
+  } else start();
 })();
 
 /* featured project switcher */

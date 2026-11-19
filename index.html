@@ -550,20 +550,35 @@ addEventListener('DOMContentLoaded', () => new Promise(r => (window.requestIdleC
   let anim, animLoop = true, onScreen = true, cur = null; // cur = sticker on screen now, so a drag peels off the same one
   // reduced motion: idle loop stays still, but a click (user-initiated) still plays its sticker once
   const shouldRun = () => onScreen && (!reduced || !animLoop);
+  // phones: the idle loop redraws at 30/s from one clock (like the TGS tiles) instead of lottie's every-screen-frame
+  // timer (60-120/s), half the SVG work or less; a clicked sticker is short and plays at full rate
+  const PHONE = matchMedia('(pointer: coarse)').matches, STEP = 1000 / 30;
+  let raf = 0, lastK = -1;
+  const tick = now => {
+    raf = requestAnimationFrame(tick);
+    const k = Math.floor(now / STEP);
+    if (k === lastK) return;
+    lastK = k;
+    anim.goToAndStop(k * STEP / 1000 * anim.frameRate % anim.totalFrames, true);
+  };
+  const resume = () => { if (PHONE && animLoop) raf ||= requestAnimationFrame(tick); else anim?.play(); };
+  const halt = () => { cancelAnimationFrame(raf); raf = 0; anim?.pause(); };
   const play = async (url, loop) => {
     const data = await load(url);
     cur = { url, data };
+    halt();
     anim?.destroy();
     animLoop = loop;
-    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: shouldRun(), animationData: data });
+    anim = lottie.loadAnimation({ container: stage, renderer: 'svg', loop, autoplay: false, animationData: data });
     if (!loop) anim.addEventListener('complete', () => play(IDLE, true));
+    if (shouldRun()) resume();
   };
   try { await play(IDLE, true); } catch { return fallback(); }
 
   // off screen: stop the hero animation (and the parallax below) instead of repainting an invisible SVG every frame
   new IntersectionObserver(([e]) => {
     onScreen = e.isIntersecting;
-    if (shouldRun()) anim?.play(); else anim?.pause();
+    if (shouldRun()) resume(); else halt();
   }).observe(host);
 
   // pick the next sticker ahead of time and warm it, so a click plays without a download

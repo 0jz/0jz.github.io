@@ -155,7 +155,7 @@ a{color:inherit}
 .dm-flash{position:absolute;left:calc(50% + 118px);top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:radial-gradient(#fff6b0,#ffb300 45%,transparent 70%);opacity:0;pointer-events:none;transition:opacity .12s}
 .dm-flash.on{opacity:1}
 .dm-armory{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.dm-slot{min-width:0;padding:5px;background:#15171b;border:2px solid #333;border-radius:8px;cursor:pointer}
+.dm-slot{min-width:0;padding:5px;background:#1a0b2e;border:2px solid #4a2a6e;border-radius:8px;cursor:pointer}
 .dm-slot canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
 .dm-label{flex:1;font-size:12.5px;min-height:1.3em}
 .dm-stage.ranged{padding:0}
@@ -173,7 +173,7 @@ a{color:inherit}
 .dm-ark.real:not(.ranging-on) .dm-view{filter:blur(8px) brightness(.72) saturate(.75);transform:scale(1.05)}
 .dm-ark.real .dm-armory{flex:1;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
 .dm-ark.real .dm-slot{display:flex;align-items:center;justify-content:center;min-height:0;height:100%}
-.dm-ark.real .dm-slot img,.dm-ark.real .dm-slot canvas{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#243044}
+.dm-ark.real .dm-slot img,.dm-ark.real .dm-slot canvas{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#2a1446}
 /* arsenal's black box matches icy tower; only the eight gun tiles grow to fill it */
 #demo-arsenal{aspect-ratio:640/480;min-height:0;overflow:hidden}
 #demo-arsenal .dm-ark{flex:1;min-height:0}
@@ -315,11 +315,12 @@ h3{text-shadow:-1.5px 0 rgba(255,79,216,.7),1.5px 0 rgba(61,242,255,.7),0 0 12px
 /* card tags: violet ink with a side stripe, no box */
 .tags span{font:11px 'VCR OSD Mono',ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;background:rgba(168,85,247,.12);border:0;border-left:2px solid #a855f7;color:#d6b8ff;border-radius:0;padding:3px 8px}
 /* list cards: no number, the label takes its place in the chrome serif */
-.grid .event{text-align:left;font-size:20px;line-height:1.1;background:linear-gradient(180deg,#fff 0%,#f2dcff 38%,#8a6fc0 50%,#fdf4ff 62%,#b49ce0 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;filter:drop-shadow(-1px 0 rgba(255,40,150,.7)) drop-shadow(1px 0 rgba(40,200,255,.7));padding-right:.15em}
+.grid .event{text-align:left;font-size:14px;line-height:1.1;opacity:.85;background:linear-gradient(180deg,#fff 0%,#f2dcff 38%,#8a6fc0 50%,#fdf4ff 62%,#b49ce0 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;filter:drop-shadow(-1px 0 rgba(255,40,150,.7)) drop-shadow(1px 0 rgba(40,200,255,.7));padding-right:.15em}
+.grid .card h3{font-size:23px;line-height:1.15}
 /* 04 tgs viewer: synthwave night instead of Telegram grey/blue */
 .feat-pane[data-tone=tgs]{--accent:#3df2ff}
-#demo-tgs,.tg-player{background:linear-gradient(180deg,#12081f,#1f0b33)}
-#demo-tgs{border:1px solid rgba(255,79,216,.3)}
+#demo-tgs,.tg-player,#demo-arsenal{background:linear-gradient(180deg,#12081f,#1f0b33)}
+#demo-tgs,#demo-arsenal{border:1px solid rgba(255,79,216,.3)}
 .tg-tile{background:rgba(255,79,216,.05);border:1px solid rgba(255,79,216,.22);border-radius:0;color:#c9a6ff}
 .tg-tile:hover,.tg-tile:focus-visible{border-color:#3df2ff;background:rgba(61,242,255,.07);box-shadow:3px 3px 0 #ff4fd8}
 .tg-player .dm-top{color:#ffb86b}
@@ -1701,7 +1702,7 @@ addEventListener('DOMContentLoaded', () => { // lottie is deferred
     });
 
     thumbR = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    thumbR.setSize(180, 96, false); thumbR.setClearColor(0x243044); thumbR.outputColorSpace = T.SRGBColorSpace;
+    thumbR.setSize(180, 96, false); thumbR.setClearColor(0x2a1446); thumbR.outputColorSpace = T.SRGBColorSpace;
     const thumbS = new T.Scene();
     thumbS.add(new T.HemisphereLight('#ffffff', '#8aa0b8', 2.4), new T.DirectionalLight('#ffffff', 2.2));
     const thumbC = new T.PerspectiveCamera(28, 180 / 96, 0.05, 40);
